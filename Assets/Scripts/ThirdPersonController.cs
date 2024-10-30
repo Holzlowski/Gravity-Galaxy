@@ -6,98 +6,74 @@ public class ThirdPersonController : MonoBehaviour
 {
     [Header("References")]
     public Rigidbody rb;
-    public Transform planet;
     public Transform playerObject;
     public Transform cameraTransform;
 
-    [Header("Movement")]
-    public float speed = 10f;
-    public float rotationSpeed = 10f;
-    public float jumpForce = 10f;
+    private PlayerMovement playerMovement;
+    private GroundDetection groundDetection;
+    private GravityController gravityController;
+    private GravityControllerForMultipleFields gravityControllerForMultipleFields;
 
-    protected Vector3 gravity;
-    public float gravitySpeed = 9.8f;
+    [SerializeField]
+    private bool isGrounded;
 
-    public bool isGrounded = false;
+    [SerializeField]
+    private bool useMultipleGravityFields = false;
 
-    // Start is called before the first frame update
-    void Start()
+    void Awake()
     {
         rb = GetComponent<Rigidbody>();
+        playerMovement = GetComponent<PlayerMovement>();
+        groundDetection = GetComponent<GroundDetection>();
+        gravityController = GetComponent<GravityController>();
+        gravityControllerForMultipleFields = GetComponent<GravityControllerForMultipleFields>();
     }
 
     private void Update()
     {
-        Jump();
-        Fall();
+        GroundCheck();
+        ApplyGravityAndMovement();
     }
 
-    // Update is called once per frame
-    void FixedUpdate()
+    private void ApplyGravityAndMovement()
     {
-        float horizontalInput = Input.GetAxis("Horizontal");
-        float verticalInput = Input.GetAxis("Vertical");
-
-        Vector3 camForward = cameraTransform.forward;
-        Vector3 camRight = cameraTransform.right;
-        camForward.y = 0f;
-        camRight.y = 0f;
-
-        Vector3 forwardRelative = verticalInput * camForward;
-        Vector3 rightRelative = horizontalInput * camRight;
-
-        Vector3 targetDirection = (forwardRelative + rightRelative).normalized;
-
-        if (targetDirection != Vector3.zero)
+        if (useMultipleGravityFields)
         {
-            // Berechne die Zielrotation basierend auf der Bewegungsrichtung
-            Quaternion targetRotation = Quaternion.LookRotation(targetDirection);
-
-            // Interpoliere die Rotation smooth
-            Quaternion smoothRotation = Quaternion.Slerp(
-                rb.rotation,
-                targetRotation,
-                rotationSpeed * Time.fixedDeltaTime
-            );
-
-            // Setze die Rotation des Rigidbody
-            rb.MoveRotation(smoothRotation);
-
-            // Interpoliere die Position smooth
-            rb.MovePosition(rb.position + targetDirection * speed * Time.fixedDeltaTime);
+            gravityControllerForMultipleFields.ApplyGravitation(rb);
+            gravityControllerForMultipleFields.RotateToPlanet(rb);
+            Vector3 gravityDirection = gravityControllerForMultipleFields.GetGravityDirection();
+            HandleMovementAndJump(gravityDirection);
         }
-
-        Debug.DrawLine(transform.position, transform.position + targetDirection * 50f, Color.green);
-    }
-
-    private void Jump()
-    {
-        if (Input.GetKeyDown(KeyCode.Space) && isGrounded)
+        else
         {
-            rb.AddForce(transform.up * jumpForce, ForceMode.Impulse);
+            gravityController.ApplyGravitation(rb);
+            gravityController.RotateToPlanet(rb);
+            Vector3 gravityDirection = gravityController.GetGravityDirection();
+            HandleMovementAndJump(gravityDirection);
         }
     }
 
-    private void OnCollisionEnter(Collision collision)
+    private void HandleMovementAndJump(Vector3 gravityDirection)
     {
-        if (collision.gameObject.CompareTag("Ground"))
+        if (isGrounded)
         {
-            isGrounded = true;
+            playerMovement.Movement(rb, playerObject, cameraTransform, gravityDirection);
         }
+        playerMovement.Jump(rb, isGrounded);
     }
 
-    private void OnCollisionExit(Collision collision)
+    private void GroundCheck()
     {
-        if (collision.gameObject.CompareTag("Ground"))
-        {
-            isGrounded = false;
-        }
+        isGrounded = groundDetection.IsGrounded;
     }
 
-    private void Fall()
+    public bool IsGrounded
     {
-        //gravity = (planet.position - transform.position).normalized * gravitySpeed;
-        gravity = Vector3.down * gravitySpeed;
-        rb.AddForce(gravity, ForceMode.Acceleration);
+        get { return isGrounded; }
+    }
+
+    public Transform GetPlayerObject()
+    {
+        return playerObject;
     }
 }
