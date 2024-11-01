@@ -7,7 +7,7 @@ public class GravityController : MonoBehaviour
 {
     private Vector3 gravityDirection;
     public float rotationToPlanetSpeed = 10f;
-    public float gravityStrength;
+    private float gravityStrength;
     public Transform currentGravityField;
 
     GravityField gravityField;

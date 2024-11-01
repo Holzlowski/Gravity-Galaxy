@@ -44,7 +44,7 @@ public class PlayerMovement : MonoBehaviour
                 Time.fixedDeltaTime * rotationSpeed
             );
 
-            rb.MovePosition(rb.position + movement_dir * speed * Time.fixedDeltaTime);
+            rb.MovePosition(rb.position + movement_dir * speed * Time.deltaTime);
         }
         else
         {
