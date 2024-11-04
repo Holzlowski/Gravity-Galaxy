@@ -4,7 +4,6 @@ using UnityEngine;
 
 public class GameManager : MonoBehaviour
 {
-    // Statische Instanzvariable
     private static GameManager _instance;
     public GameObject player;
     public bool useNormals = false;
@@ -12,7 +11,6 @@ public class GameManager : MonoBehaviour
     public bool switchGravityFieldBasedOnDistance = false;
     public bool useGravityLaw = false;
 
-    // Öffentliche statische Eigenschaft für den Zugriff auf die Instanz
     public static GameManager Instance
     {
         get
@@ -26,7 +24,7 @@ public class GameManager : MonoBehaviour
         }
     }
 
-    // Optional: Festlegen, ob die Instanz beim Szenenwechsel erhalten bleibt
+    // Festlegen, ob die Instanz beim Szenenwechsel erhalten bleibt
     private void Awake()
     {
         if (_instance != null && _instance != this)

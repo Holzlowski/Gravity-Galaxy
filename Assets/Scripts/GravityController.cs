@@ -29,29 +29,28 @@ public class GravityController : MonoBehaviour
     {
         if (GameManager.Instance.useNormals)
         {
-            // Verwende die entgegengesetzte Richtung der Normalen
+            // Verwendung der entgegengesetzte Richtung der Normalen
             gravityDirection = -surfaceNormal.normalized * gravityStrength;
             rb.AddForce(gravityDirection, ForceMode.Acceleration);
         }
         else if (currentGravityField != null)
         {
-            // Verwende die Richtung zum Zentrum des Gravitationsfeldes
+            // Richtung zum Zentrum des Gravitationsfeldes
             gravityDirection =
                 // (currentGravityField.position - rb.position).normalized * gravityStrength;
                 gravityField.CalculateGravityDirection(rb.position);
 
             if (GameManager.Instance.useGravityLaw == true)
             {
-                // Berechne die Entfernung zum Zentrum des Gravitationsfeldes
+                // Die Entfernung zum Zentrum des Gravitationsfeldes
                 float distance = Vector3.Distance(rb.position, currentGravityField.position);
                 float gravityForce = CalculateGravityForce(rb, distance);
 
-                // Wende die Gravitationskraft an
                 rb.AddForce(gravityDirection * gravityForce, ForceMode.Acceleration);
             }
             else
             {
-                // Konstante Gravitationskraft an
+                // Konstante Gravitationskraft
                 rb.AddForce(gravityDirection, ForceMode.Acceleration);
             }
         }
@@ -59,7 +58,7 @@ public class GravityController : MonoBehaviour
 
     private float CalculateGravityForce(Rigidbody rb, float distance)
     {
-        // Berechne die Gravitationskraft basierend auf der Entfernung und den Massen
+        // Gravitationskraft basierend auf der Entfernung und den Massen
         // F = G * (m1 * m2) / r^2
         return gravityStrength
             * (rb.mass * gravityField.GetGravityFieldMass())
@@ -167,7 +166,7 @@ public class GravityController : MonoBehaviour
     {
         if (GameManager.Instance.useNormals && collision.gameObject.CompareTag("Ground"))
         {
-            // Erhalte den Normalvektor der Oberfläche
+            // Normalvektor der Oberfläche
             surfaceNormal = collision.contacts[0].normal;
         }
     }

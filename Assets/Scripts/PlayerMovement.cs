@@ -11,7 +11,11 @@ public class PlayerMovement : MonoBehaviour
     public float jumpForce = 10f;
     private Vector3 lastMovementDirection;
 
-    // Start is called before the first frame update
+    private int jumpCount = 0;
+    private int maxJumpCount = 2;
+    private float lastJumpTime = 0;
+    public float jumpCooldown = 0.5f;
+
     void Awake()
     {
         rb = GetComponent<Rigidbody>();
@@ -56,11 +60,26 @@ public class PlayerMovement : MonoBehaviour
     {
         if (Input.GetKeyDown(KeyCode.Space) && isGrounded)
         {
-            Vector3 jumpDirection = transform.up * jumpForce * 0.5f; // Sprungrichtung
+            // Überprüfung, ob der letzte Sprung innerhalb des Zeitfensters war
+            if (Time.time - lastJumpTime <= jumpCooldown && jumpCount <= maxJumpCount)
+            {
+                jumpCount++;
+            }
+            else
+            {
+                jumpCount = 1;
+            }
+
+            lastJumpTime = Time.time;
+
+            // Sprungkraft basierend auf der Anzahl der aufeinanderfolgenden Sprünge
+            float currentJumpForce = jumpForce * (1 + 0.5f * (jumpCount - 1));
+
+            Vector3 jumpDirection = transform.up * currentJumpForce * 0.5f; // Sprungrichtung
 
             if (lastMovementDirection.magnitude > 0.1f)
             {
-                jumpDirection += lastMovementDirection * jumpForce; // Füge die letzte Bewegungsrichtung hinzu
+                jumpDirection += lastMovementDirection * currentJumpForce; // Letzte Bewegungsrichtung hinzu
             }
 
             rb.AddForce(jumpDirection, ForceMode.Impulse);

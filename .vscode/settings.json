@@ -56,5 +56,5 @@
         "temp/": true,
         "Temp/": true
     },
-    "dotnet.defaultSolution": "Gravity-Galaxy.sln"
+    "dotnet.defaultSolution": "Gravity Galaxy.sln"
 }

@@ -2,7 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class LookAtTarget : MonoBehaviour
+public class CameraController : MonoBehaviour
 {
     public Transform target;
     public Transform cameraTransform;
@@ -12,40 +12,59 @@ public class LookAtTarget : MonoBehaviour
 
     void Start() { }
 
-    void Update()
+    void LateUpdate()
     {
         // Kamera um den Spieler rotieren lassen
         if (Input.GetKey(KeyCode.Q))
         {
-            offset = Quaternion.AngleAxis(rotationSpeed * Time.deltaTime, Vector3.up) * offset;
+            RotateCameraAroundTarget(-target.up);
         }
         if (Input.GetKey(KeyCode.E))
         {
-            offset = Quaternion.AngleAxis(-rotationSpeed * Time.deltaTime, Vector3.up) * offset;
+            RotateCameraAroundTarget(target.up);
         }
 
-        Vector3 desiredPosition = target.position + target.rotation * offset;
+        UpdateCameraPosition();
+        UpdateCameraRotation();
+    }
+
+    private void UpdateCameraPosition()
+    {
+        Vector3 desiredPosition = CalculateDesiredPosition();
         Vector3 smoothedPosition = Vector3.Lerp(
             transform.position,
             desiredPosition,
             smoothSpeed * Time.deltaTime
         );
         transform.position = smoothedPosition;
+    }
 
+    private Vector3 CalculateDesiredPosition()
+    {
+        return target.position + target.rotation * offset;
+    }
 
-        // Blickrichtung der Kamera anpassen
-        Quaternion targetRotation = Quaternion.LookRotation(
-            target.position - transform.position,
-            target.up
-        );
+    private void UpdateCameraRotation()
+    {
+        Quaternion targetRotation = CalculateTargetRotation();
         transform.rotation = Quaternion.Slerp(
             transform.rotation,
             targetRotation,
             smoothSpeed * Time.deltaTime
         );
-        Debug.DrawLine(cameraTransform.position, cameraTransform.forward, Color.red);
+    }
+
+    private Quaternion CalculateTargetRotation()
+    {
+        return Quaternion.LookRotation(target.position - transform.position, target.up);
+    }
+
+    private void RotateCameraAroundTarget(Vector3 direction)
+    {
+        cameraTransform.RotateAround(target.position, direction, rotationSpeed * Time.deltaTime);
     }
 }
+
 
 // interessante Kameraführung xD
 // else

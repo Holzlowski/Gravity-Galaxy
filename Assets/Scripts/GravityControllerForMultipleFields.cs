@@ -29,10 +29,10 @@ public class GravityControllerForMultipleFields : MonoBehaviour
                 ? CalculateGravityForce(gravityField, rb, distance)
                 : gravityField.GetGravityStregth();
 
-            // Erhöhe die Gravitationskraft, wenn der Spieler ein bisschen weiter entfernt ist als der Collider-Radius
+            // Die Gravitationskraft, wenn der Spieler ein bisschen weiter entfernt ist als der Collider-Radius
             if (distance > colliderRadius + 5)
             {
-                fieldGravityStrength = gravityField.GetGravityStregth(); // Erhöhe die Gravitationskraft um 50%
+                fieldGravityStrength = gravityField.GetGravityStregth();
             }
 
             totalGravity = fieldGravityDirection * fieldGravityStrength;
@@ -75,6 +75,20 @@ public class GravityControllerForMultipleFields : MonoBehaviour
         rb.MoveRotation(newRotation);
     }
 
+    private void CheckGravityFieldDistances()
+    {
+        for (int i = activeGravityFields.Count - 1; i >= 0; i--)
+        {
+            GravityField gravityField = activeGravityFields[i];
+            float distance = Vector3.Distance(transform.position, gravityField.transform.position);
+            float radius = gravityField.GetGravityFieldRadius();
+            if (distance > radius)
+            {
+                activeGravityFields.RemoveAt(i); // Feld entfernen, wenn außerhalb des Radius
+            }
+        }
+    }
+
     private void OnTriggerEnter(Collider other)
     {
         if (
@@ -87,6 +101,7 @@ public class GravityControllerForMultipleFields : MonoBehaviour
             {
                 activeGravityFields.Add(newGravityField); // Neues Feld zur Liste hinzufügen
             }
+            CheckGravityFieldDistances();
         }
     }
 
