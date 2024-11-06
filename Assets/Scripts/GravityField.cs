@@ -4,6 +4,8 @@ using UnityEngine;
 
 public class GravityField : MonoBehaviour
 {
+    [SerializeField]
+    private GravityFieldType gravityFieldType;
     private Collider gravityFieldCollider;
 
     [SerializeField]
@@ -12,6 +14,9 @@ public class GravityField : MonoBehaviour
     [SerializeField]
     private float gravityFieldMass = 1000f;
 
+    [SerializeField]
+    private int priority = 0;
+
     void Awake()
     {
         gravityFieldCollider = GetComponent<Collider>();
@@ -19,10 +24,20 @@ public class GravityField : MonoBehaviour
 
     public Vector3 CalculateGravityDirection(Vector3 playerPosition)
     {
-        return (transform.position - playerPosition).normalized * gravityStrength;
+        switch (gravityFieldType)
+        {
+            case GravityFieldType.Centerpoint:
+                return (transform.position - playerPosition).normalized * gravityStrength;
+            case GravityFieldType.Down:
+                return transform.up * -1;
+            case GravityFieldType.CenterpointInverse:
+                return (playerPosition - transform.position).normalized * gravityStrength;
+            default:
+                return (transform.position - playerPosition).normalized;
+        }
     }
 
-    public float GetGravityStregth()
+    public float GetGravityStrength()
     {
         return gravityStrength;
     }
@@ -36,4 +51,21 @@ public class GravityField : MonoBehaviour
     {
         return gravityFieldCollider.bounds.extents.magnitude;
     }
+
+    public GravityFieldType GetGravityType()
+    {
+        return gravityFieldType;
+    }
+
+    public int GetPriority()
+    {
+        return priority;
+    }
+}
+
+public enum GravityFieldType
+{
+    Centerpoint,
+    Down,
+    CenterpointInverse,
 }

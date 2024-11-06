@@ -21,7 +21,7 @@ public class GravityController : MonoBehaviour
     private void Awake()
     {
         gravityField = currentGravityField.GetComponent<GravityField>();
-        gravityStrength = gravityField.GetGravityStregth();
+        gravityStrength = gravityField.GetGravityStrength();
         gravityDirection = gravityField.CalculateGravityDirection(transform.position);
     }
 
@@ -121,7 +121,7 @@ public class GravityController : MonoBehaviour
     private void UpdateGravityField(Transform newGravityField)
     {
         gravityField = newGravityField.GetComponent<GravityField>();
-        gravityStrength = gravityField.GetGravityStregth();
+        gravityStrength = gravityField.GetGravityStrength();
         gravityDirection = gravityField.CalculateGravityDirection(transform.position);
         currentGravityField = newGravityField;
     }

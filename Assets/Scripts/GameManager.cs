@@ -10,6 +10,7 @@ public class GameManager : MonoBehaviour
     public bool allowSpaceFlight = false;
     public bool switchGravityFieldBasedOnDistance = false;
     public bool useGravityLaw = false;
+    public bool equalJumpHeight = false;
 
     public static GameManager Instance
     {
