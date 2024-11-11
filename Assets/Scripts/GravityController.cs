@@ -21,7 +21,7 @@ public class GravityController : MonoBehaviour
     private void Awake()
     {
         gravityField = currentGravityField.GetComponent<GravityField>();
-        gravityStrength = gravityField.GetGravityStrength();
+        gravityStrength = gravityField.GravityStrength;
         gravityDirection = gravityField.CalculateGravityDirection(transform.position);
     }
 
@@ -60,9 +60,7 @@ public class GravityController : MonoBehaviour
     {
         // Gravitationskraft basierend auf der Entfernung und den Massen
         // F = G * (m1 * m2) / r^2
-        return gravityStrength
-            * (rb.mass * gravityField.GetGravityFieldMass())
-            / (distance * distance);
+        return gravityStrength * (rb.mass * gravityField.GravityFieldMass) / (distance * distance);
     }
 
     public void RotateToPlanet(Rigidbody rb)
@@ -121,7 +119,7 @@ public class GravityController : MonoBehaviour
     private void UpdateGravityField(Transform newGravityField)
     {
         gravityField = newGravityField.GetComponent<GravityField>();
-        gravityStrength = gravityField.GetGravityStrength();
+        gravityStrength = gravityField.GravityStrength;
         gravityDirection = gravityField.CalculateGravityDirection(transform.position);
         currentGravityField = newGravityField;
     }

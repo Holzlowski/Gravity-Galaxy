@@ -14,12 +14,15 @@ public class GravityField : MonoBehaviour
     [SerializeField]
     private float gravityFieldMass = 1000f;
 
+    private float gravityFieldRadius;
+
     [SerializeField]
     private int priority = 0;
 
     void Awake()
     {
         gravityFieldCollider = GetComponent<Collider>();
+        gravityFieldRadius = gravityFieldCollider.bounds.extents.magnitude;
     }
 
     public Vector3 CalculateGravityDirection(Vector3 playerPosition)
@@ -37,30 +40,11 @@ public class GravityField : MonoBehaviour
         }
     }
 
-    public float GetGravityStrength()
-    {
-        return gravityStrength;
-    }
-
-    public float GetGravityFieldMass()
-    {
-        return gravityFieldMass;
-    }
-
-    public float GetGravityFieldRadius()
-    {
-        return gravityFieldCollider.bounds.extents.magnitude;
-    }
-
-    public GravityFieldType GetGravityType()
-    {
-        return gravityFieldType;
-    }
-
-    public int GetPriority()
-    {
-        return priority;
-    }
+    public float GravityStrength => gravityStrength;
+    public float GravityFieldMass => gravityFieldMass;
+    public float GravityFieldRadius => gravityFieldRadius;
+    public GravityFieldType GravityType => gravityFieldType;
+    public int Priority => priority;
 }
 
 public enum GravityFieldType

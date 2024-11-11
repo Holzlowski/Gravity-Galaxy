@@ -3,7 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class PlayerMovement : MonoBehaviour
+public class Movement : MonoBehaviour
 {
     private Rigidbody rb;
     public float speed = 10f;
@@ -23,34 +23,44 @@ public class PlayerMovement : MonoBehaviour
         rb = GetComponent<Rigidbody>();
     }
 
-    public void Movement(
-        Rigidbody rb,
+    public void Move(
+        Vector3 directionVector,
         Transform playerObject,
-        Transform cameraTransform,
-        Vector3 gravityDirection
+        Vector3 gravityDirection,
+        Transform cameraTransform = null // Optionales cameraTransform
     )
     {
-        Vector3 inputVector = new Vector3(
-            Input.GetAxisRaw("Horizontal"),
-            0,
-            Input.GetAxisRaw("Vertical")
-        );
-        Vector3 cameraRotation = new Vector3(0, cameraTransform.localEulerAngles.y, 0);
-        Vector3 direction = Quaternion.Euler(cameraRotation) * inputVector;
-        Vector3 movement_dir = transform.forward * direction.z + transform.right * direction.x;
+        Vector3 movementDirection;
 
-        if (inputVector.magnitude >= 0.1f)
+        if (cameraTransform != null)
         {
-            lastMovementDirection = movement_dir; // Letzte Bewegungsrichtung
+            // Spielerbewegung: Nutze Kameraausrichtung
+            Vector3 cameraRotation = new Vector3(0, cameraTransform.localEulerAngles.y, 0);
+            Vector3 rotatedDirection = Quaternion.Euler(cameraRotation) * directionVector;
+            movementDirection =
+                transform.forward * rotatedDirection.z + transform.right * rotatedDirection.x;
+        }
+        else
+        {
+            // NPC-Bewegung: Nutze directionVector direkt
+            movementDirection = directionVector;
+        }
 
-            Quaternion targetRotation = Quaternion.LookRotation(movement_dir, -gravityDirection);
+        if (movementDirection.magnitude >= 0.1f)
+        {
+            lastMovementDirection = movementDirection; // Letzte Bewegungsrichtung speichern
+
+            Quaternion targetRotation = Quaternion.LookRotation(
+                movementDirection,
+                -gravityDirection
+            );
             playerObject.rotation = Quaternion.Slerp(
                 playerObject.rotation,
                 targetRotation,
                 Time.fixedDeltaTime * rotationSpeed
             );
 
-            rb.MovePosition(rb.position + movement_dir * speed * Time.deltaTime);
+            rb.MovePosition(rb.position + movementDirection * speed * Time.deltaTime);
         }
         else
         {
@@ -58,9 +68,9 @@ public class PlayerMovement : MonoBehaviour
         }
     }
 
-    public void Jump(Rigidbody rb, bool isGrounded)
+    public void Jump()
     {
-        if (Input.GetKeyDown(KeyCode.Space) && isGrounded)
+        if (Input.GetKeyDown(KeyCode.Space))
         {
             // Überprüfung, ob der letzte Sprung innerhalb des Zeitfensters war
             if (Time.time - lastJumpTime <= jumpCooldown && jumpCount <= maxJumpCount)

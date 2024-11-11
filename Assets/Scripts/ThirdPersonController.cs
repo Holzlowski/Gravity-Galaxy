@@ -5,11 +5,11 @@ using UnityEngine;
 public class ThirdPersonController : MonoBehaviour
 {
     [Header("References")]
-    public Rigidbody rb;
+    //public Rigidbody rb;
     public Transform playerObject;
     public Transform cameraTransform;
 
-    private PlayerMovement playerMovement;
+    private Movement playerMovement;
     private GroundDetection groundDetection;
     private GravityController gravityController;
     private GravityControllerForMultipleFields gravityControllerForMultipleFields;
@@ -22,8 +22,8 @@ public class ThirdPersonController : MonoBehaviour
 
     void Awake()
     {
-        rb = GetComponent<Rigidbody>();
-        playerMovement = GetComponent<PlayerMovement>();
+        //rb = GetComponent<Rigidbody>();
+        playerMovement = GetComponent<Movement>();
         groundDetection = GetComponent<GroundDetection>();
         gravityController = GetComponent<GravityController>();
         gravityControllerForMultipleFields = GetComponent<GravityControllerForMultipleFields>();
@@ -39,27 +39,32 @@ public class ThirdPersonController : MonoBehaviour
     {
         if (useMultipleGravityFields)
         {
-            gravityControllerForMultipleFields.ApplyGravitation(rb);
-            gravityControllerForMultipleFields.RotateToPlanet(rb);
+            gravityControllerForMultipleFields.ApplyGravitation();
+            gravityControllerForMultipleFields.RotateToPlanet();
             Vector3 gravityDirection = gravityControllerForMultipleFields.GetGravityDirection();
             HandleMovementAndJump(gravityDirection);
         }
-        else
-        {
-            gravityController.ApplyGravitation(rb);
-            gravityController.RotateToPlanet(rb);
-            Vector3 gravityDirection = gravityController.GetGravityDirection();
-            HandleMovementAndJump(gravityDirection);
-        }
+        // else
+        // {
+        //     gravityController.ApplyGravitation(rb);
+        //     gravityController.RotateToPlanet(rb);
+        //     Vector3 gravityDirection = gravityController.GetGravityDirection();
+        //     HandleMovementAndJump(gravityDirection);
+        // }
     }
 
     private void HandleMovementAndJump(Vector3 gravityDirection)
     {
         if (isGrounded)
         {
-            playerMovement.Movement(rb, playerObject, cameraTransform, gravityDirection);
+            playerMovement.Move(GetInputVector(), playerObject, gravityDirection, cameraTransform);
+            playerMovement.Jump();
         }
-        playerMovement.Jump(rb, isGrounded);
+    }
+
+    private static Vector3 GetInputVector()
+    {
+        return new Vector3(Input.GetAxisRaw("Horizontal"), 0, Input.GetAxisRaw("Vertical"));
     }
 
     private void GroundCheck()
