@@ -6,9 +6,13 @@ using UnityEngine;
 public class GravityController : MonoBehaviour
 {
     private Vector3 gravityDirection;
-    public float rotationToPlanetSpeed = 10f;
+
+    [SerializeField]
+    private float rotationToPlanetSpeed = 10f;
     private float gravityStrength;
-    public Transform currentGravityField;
+
+    [SerializeField]
+    private Transform currentGravityField;
 
     GravityField gravityField;
     private Vector3 surfaceNormal;

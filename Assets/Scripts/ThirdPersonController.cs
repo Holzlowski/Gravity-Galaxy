@@ -5,27 +5,24 @@ using UnityEngine;
 public class ThirdPersonController : MonoBehaviour
 {
     [Header("References")]
-    //public Rigidbody rb;
-    public Transform playerObject;
-    public Transform cameraTransform;
+    [SerializeField]
+    private Transform playerObject;
+
+    [SerializeField]
+    private Transform cameraTransform;
 
     private Movement playerMovement;
     private GroundDetection groundDetection;
-    private GravityController gravityController;
     private GravityControllerForMultipleFields gravityControllerForMultipleFields;
 
     [SerializeField]
     private bool isGrounded;
-
-    [SerializeField]
-    private bool useMultipleGravityFields = false;
 
     void Awake()
     {
         //rb = GetComponent<Rigidbody>();
         playerMovement = GetComponent<Movement>();
         groundDetection = GetComponent<GroundDetection>();
-        gravityController = GetComponent<GravityController>();
         gravityControllerForMultipleFields = GetComponent<GravityControllerForMultipleFields>();
     }
 
@@ -37,20 +34,10 @@ public class ThirdPersonController : MonoBehaviour
 
     private void ApplyGravityAndMovement()
     {
-        if (useMultipleGravityFields)
-        {
-            gravityControllerForMultipleFields.ApplyGravitation();
-            gravityControllerForMultipleFields.RotateToPlanet();
-            Vector3 gravityDirection = gravityControllerForMultipleFields.GetGravityDirection();
-            HandleMovementAndJump(gravityDirection);
-        }
-        // else
-        // {
-        //     gravityController.ApplyGravitation(rb);
-        //     gravityController.RotateToPlanet(rb);
-        //     Vector3 gravityDirection = gravityController.GetGravityDirection();
-        //     HandleMovementAndJump(gravityDirection);
-        // }
+        Vector3 gravityDirection = gravityControllerForMultipleFields.GetGravityDirection();
+        HandleMovementAndJump(gravityDirection);
+        gravityControllerForMultipleFields.ApplyGravitation();
+        gravityControllerForMultipleFields.RotateToPlanet();
     }
 
     private void HandleMovementAndJump(Vector3 gravityDirection)
@@ -58,7 +45,10 @@ public class ThirdPersonController : MonoBehaviour
         if (isGrounded)
         {
             playerMovement.Move(GetInputVector(), playerObject, gravityDirection, cameraTransform);
-            playerMovement.Jump();
+            if (Input.GetKeyDown(KeyCode.Space))
+            {
+                playerMovement.Jump();
+            }
         }
     }
 
@@ -72,13 +62,8 @@ public class ThirdPersonController : MonoBehaviour
         isGrounded = groundDetection.IsGrounded;
     }
 
-    public bool IsGrounded
-    {
-        get { return isGrounded; }
-    }
-
-    public Transform GetPlayerObject()
-    {
-        return playerObject;
-    }
+    // public bool IsGrounded
+    // {
+    //     get { return isGrounded; }
+    // }
 }

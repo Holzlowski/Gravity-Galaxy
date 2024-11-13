@@ -4,9 +4,14 @@ using UnityEngine;
 
 public class GroundDetection : MonoBehaviour
 {
-    public Transform groundCheck;
-    public float groundRadius = 0.2f;
-    public LayerMask whatIsGround;
+    [SerializeField]
+    private Transform groundCheck;
+
+    [SerializeField]
+    private float groundRadius = 0.2f;
+
+    [SerializeField]
+    private LayerMask whatIsGround;
     private bool isGrounded = false;
 
     public bool IsGrounded

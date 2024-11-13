@@ -7,14 +7,30 @@ using UnityEngine;
 public class GravityControllerForMultipleFields : MonoBehaviour
 {
     Rigidbody rb;
-    public List<GravityField> activeGravityFields = new List<GravityField>(); // Liste der aktiven Gravitationsfelder
+
+    [SerializeField]
+    private List<GravityField> activeGravityFields = new List<GravityField>(); // Liste der aktiven Gravitationsfelder
     private Vector3 gravityDirection;
-    public float rotationToPlanetSpeed = 10f;
-    public bool useGravityLaw = true;
+
+    [SerializeField]
+    private float rotationToPlanetSpeed = 10f;
+
+    // [SerializeField]
+    // private float rotationAroundSun = 0.01f;
+
+    [SerializeField]
+    private bool useGravityLaw = true;
+    private GroundDetection groundDetection;
 
     void Awake()
     {
         rb = GetComponent<Rigidbody>();
+        groundDetection = GetComponent<GroundDetection>();
+    }
+
+    void Update()
+    {
+        //RotateAroundTheSun();
     }
 
     public Vector3 GetGravityDirection()
@@ -36,19 +52,11 @@ public class GravityControllerForMultipleFields : MonoBehaviour
         // Finde die höchste Priorität und filtere die relevanten Felder
         var highestPriorityFields = GetHighestPriorityFields();
 
-        if (highestPriorityFields.Count == 1)
+        foreach (var gravityField in highestPriorityFields)
         {
-            totalGravity = CalculateFieldGravity(highestPriorityFields[0]);
-            gravityDirection = totalGravity.normalized;
+            totalGravity += CalculateFieldGravity(gravityField);
         }
-        else
-        {
-            foreach (var gravityField in highestPriorityFields)
-            {
-                totalGravity += CalculateFieldGravity(gravityField);
-            }
-            gravityDirection = totalGravity.normalized;
-        }
+        gravityDirection = totalGravity.normalized;
 
         rb.AddForce(totalGravity, ForceMode.Acceleration);
     }
@@ -128,13 +136,11 @@ public class GravityControllerForMultipleFields : MonoBehaviour
 
     private void OnTriggerStay(Collider other)
     {
-        CheckGravityFieldDistances();
-        if (
-            GameManager.Instance.player.GetComponent<ThirdPersonController>().IsGrounded == false
-            && other.CompareTag("GravityField")
-        )
+        //OnTriggerEnter reagiert nicht auf Triggerevents, wenn der Collider sich bereits im Triggerbereich befindet
+        if (!groundDetection.IsGrounded && other.CompareTag("GravityField"))
         {
             AddGravityField(other.GetComponent<GravityField>());
+            CheckGravityFieldDistances();
         }
     }
 
@@ -143,6 +149,7 @@ public class GravityControllerForMultipleFields : MonoBehaviour
         if (other.CompareTag("GravityField"))
         {
             RemoveGravityField(other.GetComponent<GravityField>());
+            CheckGravityFieldDistances();
         }
     }
 
@@ -151,7 +158,6 @@ public class GravityControllerForMultipleFields : MonoBehaviour
         if (!activeGravityFields.Contains(newGravityField))
         {
             activeGravityFields.Add(newGravityField);
-            CheckGravityFieldDistances();
         }
     }
 
@@ -163,4 +169,35 @@ public class GravityControllerForMultipleFields : MonoBehaviour
         }
         activeGravityFields.Remove(gravityField);
     }
+
+    public void GetClosestGravityField()
+    {
+        float minDistance = float.MaxValue;
+        GravityField closestField = null;
+
+        foreach (var gravityField in GetHighestPriorityFields())
+        {
+            float distance = Vector3.Distance(transform.position, gravityField.transform.position);
+            if (distance < minDistance)
+            {
+                minDistance = distance;
+                closestField = gravityField;
+            }
+        }
+
+        if (closestField != null)
+        {
+            activeGravityFields.Clear();
+            activeGravityFields.Add(closestField);
+        }
+    }
 }
+
+//  private void RotateAroundTheSun()
+//     {
+//         transform.RotateAround(
+//             GameManager.Instance.Sun.transform.position,
+//             Vector3.right,
+//             rotationAroundSun * Time.deltaTime
+//         );
+//     }

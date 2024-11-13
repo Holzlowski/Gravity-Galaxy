@@ -4,13 +4,20 @@ using UnityEngine;
 
 public class CameraController : MonoBehaviour
 {
-    public Transform target;
-    public Transform cameraTransform;
-    public float rotationSpeed = 1.0f;
-    public float smoothSpeed = 0.125f;
-    public Vector3 offset;
+    [SerializeField]
+    private Transform target;
 
-    void Start() { }
+    [SerializeField]
+    private Transform cameraTransform;
+
+    [SerializeField]
+    private float rotationSpeed = 1.0f;
+
+    [SerializeField]
+    private float smoothSpeed = 0.125f;
+
+    [SerializeField]
+    private Vector3 offset;
 
     void LateUpdate()
     {
