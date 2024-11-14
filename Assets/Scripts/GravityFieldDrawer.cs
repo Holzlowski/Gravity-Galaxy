@@ -19,7 +19,7 @@ public class GravityFieldDrawer : Editor
         SerializedProperty priorityProp = serializedObject.FindProperty("priority");
         EditorGUILayout.PropertyField(priorityProp, new GUIContent("Priority"));
 
-        // Zeichne das priority-Feld
+        // Zeichne das gravityFieldMass-Feld
         SerializedProperty gravityFieldMassProp = serializedObject.FindProperty("gravityFieldMass");
         EditorGUILayout.PropertyField(gravityFieldMassProp, new GUIContent("Gravity Field Mass"));
 
