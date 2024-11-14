@@ -69,7 +69,7 @@ public class GravityControllerForMultipleFields : MonoBehaviour
         float colliderRadius = gravityField.GravityFieldRadius;
         float fieldGravityStrength;
 
-        if (gravityField.GravityType == GravityFieldType.Down)
+        if (gravityField.GravityFieldType == GravityFieldType.Down)
         {
             fieldGravityStrength = gravityField.GravityStrength;
         }

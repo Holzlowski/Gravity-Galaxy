@@ -9,10 +9,13 @@ public class GravityField : MonoBehaviour
     private Collider gravityFieldCollider;
 
     [SerializeField]
+    private Collider meshCollider;
+
+    [SerializeField]
     private float gravityStrength = 9.81f;
 
     [SerializeField]
-    private float gravityFieldMass = 1000f;
+    private float gravityFieldMass = 10f;
 
     private float gravityFieldRadius;
 
@@ -35,15 +38,31 @@ public class GravityField : MonoBehaviour
                 return transform.up * -1;
             case GravityFieldType.CenterpointInverse:
                 return (playerPosition - transform.position).normalized * gravityStrength;
+            case GravityFieldType.MeshBased:
+                return CalculateMeshBasedGravity(playerPosition);
             default:
                 return (transform.position - playerPosition).normalized;
+        }
+    }
+
+    private Vector3 CalculateMeshBasedGravity(Vector3 playerPosition)
+    {
+        if (meshCollider != null)
+        {
+            Vector3 closestPoint = meshCollider.ClosestPoint(playerPosition);
+            return (closestPoint - playerPosition).normalized * gravityStrength;
+        }
+        else
+        {
+            Debug.LogError("MeshCollider is not set for MeshBased gravity field");
+            return Vector3.zero;
         }
     }
 
     public float GravityStrength => gravityStrength;
     public float GravityFieldMass => gravityFieldMass;
     public float GravityFieldRadius => gravityFieldRadius;
-    public GravityFieldType GravityType => gravityFieldType;
+    public GravityFieldType GravityFieldType => gravityFieldType;
     public int Priority => priority;
 }
 
@@ -52,4 +71,5 @@ public enum GravityFieldType
     Centerpoint,
     Down,
     CenterpointInverse,
+    MeshBased,
 }
