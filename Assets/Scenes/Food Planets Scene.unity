@@ -159,6 +159,7 @@ MonoBehaviour:
   gravityStrength: 9.81
   gravityFieldMass: 10
   priority: 1
+  thresholdDistance: 0.1
 --- !u!65 &22544884
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -731,7 +732,7 @@ Transform:
   m_GameObject: {fileID: 705734370}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: -1, z: 0}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -1512,7 +1513,7 @@ CapsuleCollider:
   m_Radius: 0.5
   m_Height: 1.8
   m_Direction: 1
-  m_Center: {x: 0, y: 0, z: 0}
+  m_Center: {x: 0, y: 1, z: 0}
 --- !u!114 &1294120417
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1849,7 +1850,7 @@ Transform:
   m_GameObject: {fileID: 1574030189}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalPosition: {x: 0, y: 1, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:

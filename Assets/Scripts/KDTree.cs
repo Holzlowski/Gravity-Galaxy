@@ -8,20 +8,22 @@ public class KDTree
     private class Node
     {
         public Vector3 point; // Der Punkt im 3D-Raum, den der Knoten repräsentiert
+        public Vector3 normal; // Die Normale des Punktes
         public Node left;     // Linker Teilbaum (niedrigere Werte entlang der aktuellen Achse)
         public Node right;    // Rechter Teilbaum (höhere Werte entlang der aktuellen Achse)
+
     }
 
     private Node root; // Wurzel des KD-Baums
 
     // Konstruktor, der den Baum aus einem Array von 3D-Punkten erstellt
-    public KDTree(Vector3[] points)
+    public KDTree(Vector3[] points, Vector3[] normals)
     {
-        root = BuildTree(points, 0); // Beginne mit der Tiefe 0
+        root = BuildTree(points, normals, 0); // Beginne mit der Tiefe 0
     }
 
     // Rekursive Methode zum Erstellen des KD-Baums
-    private Node BuildTree(Vector3[] points, int depth)
+    private Node BuildTree(Vector3[] points, Vector3[] normals, int depth)
     {
         // Basisfall: Wenn keine Punkte mehr übrig sind, gibt es keinen Knoten
         if (points.Length == 0)
@@ -40,10 +42,12 @@ public class KDTree
         Node node = new Node
         {
             point = points[median],
+            normal = normals[median],
             // Rekursiv die linken und rechten Teilbäume erstellen
-            left = BuildTree(points[..median], depth + 1),            // Linke Hälfte der Punkte
-            right = BuildTree(points[(median + 1)..], depth + 1)     // Rechte Hälfte der Punkte
+            left = BuildTree(points[..median], normals[..median], depth + 1),            // Linke Hälfte der Punkte
+            right = BuildTree(points[(median + 1)..], normals[(median + 1)..], depth + 1)     // Rechte Hälfte der Punkte
         };
+
 
         return node; // Rückgabe des erstellten Knotens
     }

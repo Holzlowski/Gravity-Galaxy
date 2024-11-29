@@ -101,7 +101,7 @@ public class Movement : MonoBehaviour
         Vector3 movementDirection
     )
     {
-        Quaternion targetRotation = Quaternion.LookRotation(movementDirection, -gravityDirection);
+        Quaternion targetRotation = Quaternion.LookRotation(movementDirection, transform.up);
         characterObject.rotation = Quaternion.Slerp(
             characterObject.rotation,
             targetRotation,

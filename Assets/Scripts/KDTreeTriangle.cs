@@ -1,24 +1,17 @@
-using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
 public class KDTreeTriangle
 {
-    private class Node
-    {
-        public Vector3[] triangle; // Das Dreieck im 3D-Raum, das der Knoten repräsentiert
-        public Node left;
-        public Node right;
-    }
-
-    private Node root;
+    private Triangle root;
 
     public KDTreeTriangle(Vector3[][] triangles)
     {
         root = BuildTree(triangles, 0);
+        BuildNeighbors(root, triangles);
     }
 
-    private Node BuildTree(Vector3[][] triangles, int depth)
+    private Triangle BuildTree(Vector3[][] triangles, int depth)
     {
         if (triangles.Length == 0)
             return null;
@@ -27,9 +20,9 @@ public class KDTreeTriangle
         System.Array.Sort(triangles, (a, b) => a[0][axis].CompareTo(b[0][axis]));
 
         int median = triangles.Length / 2;
-        Node node = new Node
+        Triangle node = new Triangle(triangles[median], CalculateTriangleNormal(triangles[median]))
         {
-            triangle = triangles[median],
+            neighbors = new List<Triangle>(),
             left = BuildTree(triangles[..median], depth + 1),
             right = BuildTree(triangles[(median + 1)..], depth + 1)
         };
@@ -37,23 +30,92 @@ public class KDTreeTriangle
         return node;
     }
 
-    public Vector3[] FindNearestTriangle(Vector3 target)
+    private void BuildNeighbors(Triangle node, Vector3[][] triangles)
     {
-        return FindNearestTriangle(root, target, 0).triangle;
+        if (node == null)
+            return;
+
+        foreach (var triangle in triangles)
+        {
+            if (triangle != node.vertices && AreTrianglesNeighbors(node.vertices, triangle))
+            {
+                Triangle neighborNode = FindNode(root, triangle);
+                if (neighborNode != null)
+                {
+                    node.neighbors.Add(neighborNode);
+                }
+            }
+        }
+
+        BuildNeighbors(node.left, triangles);
+        BuildNeighbors(node.right, triangles);
     }
 
-    private Node FindNearestTriangle(Node node, Vector3 target, int depth)
+    private Triangle FindNode(Triangle node, Vector3[] triangle)
+    {
+        if (node == null)
+            return null;
+
+        if (node.vertices == triangle)
+            return node;
+
+        Triangle foundNode = FindNode(node.left, triangle);
+        if (foundNode == null)
+        {
+            foundNode = FindNode(node.right, triangle);
+        }
+
+        return foundNode;
+    }
+
+    private bool AreTrianglesNeighbors(Vector3[] triangle1, Vector3[] triangle2)
+    {
+        foreach (var vertex1 in triangle1)
+        {
+            foreach (var vertex2 in triangle2)
+            {
+                if (vertex1 == vertex2)
+                {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
+    // private bool AreTrianglesNeighbors(Vector3[] triangle1, Vector3[] triangle2)
+    // {
+    //     int sharedVertices = 0;
+    //     foreach (var vertex1 in triangle1)
+    //     {
+    //         foreach (var vertex2 in triangle2)
+    //         {
+    //             if (vertex1 == vertex2)
+    //             {
+    //                 sharedVertices++;
+    //             }
+    //         }
+    //     }
+    //     return sharedVertices >= 2;
+    // }
+
+    public Triangle FindNearestTriangleNode(Vector3 target)
+    {
+        return FindNearestTriangle(root, target, 0);
+    }
+
+    private Triangle FindNearestTriangle(Triangle node, Vector3 target, int depth)
     {
         if (node == null)
             return null;
 
         int axis = depth % 3;
-        Node nextBranch = (target[axis] < node.triangle[0][axis]) ? node.left : node.right;
-        Node otherBranch = (target[axis] < node.triangle[0][axis]) ? node.right : node.left;
+        Triangle nextBranch = (target[axis] < node.vertices[0][axis]) ? node.left : node.right;
+        Triangle otherBranch = (target[axis] < node.vertices[0][axis]) ? node.right : node.left;
 
-        Node best = CloserDistance(target, FindNearestTriangle(nextBranch, target, depth + 1), node);
+        Triangle best = CloserDistance(target, FindNearestTriangle(nextBranch, target, depth + 1), node);
 
-        if (otherBranch != null && Mathf.Abs(target[axis] - node.triangle[0][axis]) < DistanceToTriangle(target, best.triangle))
+        if (otherBranch != null && Mathf.Abs(target[axis] - node.vertices[0][axis]) < DistanceToTriangle(target, best.vertices))
         {
             best = CloserDistance(target, FindNearestTriangle(otherBranch, target, depth + 1), best);
         }
@@ -61,68 +123,41 @@ public class KDTreeTriangle
         return best;
     }
 
-    private Node CloserDistance(Vector3 target, Node a, Node b)
+    private Triangle CloserDistance(Vector3 target, Triangle a, Triangle b)
     {
         if (a == null) return b;
         if (b == null) return a;
-        return (DistanceToTriangle(target, a.triangle) < DistanceToTriangle(target, b.triangle)) ? a : b;
+        return (DistanceToTriangle(target, a.vertices) < DistanceToTriangle(target, b.vertices)) ? a : b;
     }
 
     private float DistanceToTriangle(Vector3 point, Vector3[] triangle)
     {
-        // Berechne die Entfernung vom Punkt zum Dreieck
-        Vector3 closestPoint = ClosestPointOnTriangle(point, triangle[0], triangle[1], triangle[2]);
-        return Vector3.Distance(point, closestPoint);
+        Vector3 triangleCenter = (triangle[0] + triangle[1] + triangle[2]) / 3.0f;
+        return Vector3.Distance(point, triangleCenter);
     }
 
-    private Vector3 ClosestPointOnTriangle(Vector3 point, Vector3 a, Vector3 b, Vector3 c)
+    public Vector3 CalculateBarycentricCoordinates(Vector3 point, Vector3 a, Vector3 b, Vector3 c)
     {
-        // Berechne den nächstgelegenen Punkt auf dem Dreieck
-        Vector3 ab = b - a;
-        Vector3 ac = c - a;
-        Vector3 ap = point - a;
+        Vector3 v0 = b - a;
+        Vector3 v1 = c - a;
+        Vector3 v2 = point - a;
+        float d00 = Vector3.Dot(v0, v0);
+        float d01 = Vector3.Dot(v0, v1);
+        float d11 = Vector3.Dot(v1, v1);
+        float d20 = Vector3.Dot(v2, v0);
+        float d21 = Vector3.Dot(v2, v1);
+        float denom = d00 * d11 - d01 * d01;
+        float v = (d11 * d20 - d01 * d21) / denom;
+        float w = (d00 * d21 - d01 * d20) / denom;
+        float u = 1.0f - v - w;
+        return new Vector3(u, v, w);
+    }
 
-        float d1 = Vector3.Dot(ab, ap);
-        float d2 = Vector3.Dot(ac, ap);
-
-        if (d1 <= 0.0f && d2 <= 0.0f) return a;
-
-        Vector3 bp = point - b;
-        float d3 = Vector3.Dot(ab, bp);
-        float d4 = Vector3.Dot(ac, bp);
-
-        if (d3 >= 0.0f && d4 <= d3) return b;
-
-        float vc = d1 * d4 - d3 * d2;
-        if (vc <= 0.0f && d1 >= 0.0f && d3 <= 0.0f)
-        {
-            float v = d1 / (d1 - d3);
-            return a + v * ab;
-        }
-
-        Vector3 cp = point - c;
-        float d5 = Vector3.Dot(ab, cp);
-        float d6 = Vector3.Dot(ac, cp);
-
-        if (d6 >= 0.0f && d5 <= d6) return c;
-
-        float vb = d5 * d2 - d1 * d6;
-        if (vb <= 0.0f && d2 >= 0.0f && d6 <= 0.0f)
-        {
-            float w = d2 / (d2 - d6);
-            return a + w * ac;
-        }
-
-        float va = d3 * d6 - d5 * d4;
-        if (va <= 0.0f && (d4 - d3) >= 0.0f && (d5 - d6) >= 0.0f)
-        {
-            float u = (d4 - d3) / ((d4 - d3) + (d5 - d6));
-            return b + u * (c - b);
-        }
-
-        float denom = 1.0f / (va + vb + vc);
-        float v2 = vb * denom;
-        float w2 = vc * denom;
-        return a + ab * v2 + ac * w2;
+    private Vector3 CalculateTriangleNormal(Vector3[] triangle)
+    {
+        Vector3 v0 = triangle[0];
+        Vector3 v1 = triangle[1];
+        Vector3 v2 = triangle[2];
+        return Vector3.Cross(v1 - v0, v2 - v0).normalized;
     }
 }

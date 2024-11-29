@@ -39,6 +39,10 @@ public class GravityFieldDrawer : Editor
         {
             SerializedProperty meshColliderProp = serializedObject.FindProperty("meshCollider");
             EditorGUILayout.PropertyField(meshColliderProp, new GUIContent("Mesh Collider"));
+
+            SerializedProperty thresholdDistance = serializedObject.FindProperty("thresholdDistance");
+            EditorGUILayout.PropertyField(thresholdDistance, new GUIContent("Threshold Distance"));
+
         }
 
         serializedObject.ApplyModifiedProperties();
