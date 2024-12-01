@@ -27,15 +27,18 @@ public class GravityFieldDrawer : Editor
         SerializedProperty gravityFieldTypeProp = serializedObject.FindProperty("gravityFieldType");
         EditorGUILayout.PropertyField(gravityFieldTypeProp, new GUIContent("Gravity Field Type"));
 
-        // Zeichne das meshCollider-Feld nur, wenn GravityFieldType auf MeshBased gesetzt ist
-        if ((GravityFieldType)gravityFieldTypeProp.enumValueIndex == GravityFieldType.MeshBasedSimple)
+        // Zeichne das Enum-Feld für GravityDelay
+        SerializedProperty gravityDelay = serializedObject.FindProperty("gravityDelay");
+        EditorGUILayout.PropertyField(gravityDelay, new GUIContent("Gravity Delay"));
+
+        if ((GravityFieldType)gravityFieldTypeProp.enumValueIndex == GravityFieldType.SimpleMesh)
         {
             SerializedProperty meshColliderProp = serializedObject.FindProperty("simpleCollider");
             EditorGUILayout.PropertyField(meshColliderProp, new GUIContent("Collider"));
         }
 
-        // Zeichne das meshCollider-Feld nur, wenn GravityFieldType auf MeshBased gesetzt ist
-        if ((GravityFieldType)gravityFieldTypeProp.enumValueIndex == GravityFieldType.MeshBasedKDTree)
+
+        if ((GravityFieldType)gravityFieldTypeProp.enumValueIndex == GravityFieldType.LowPolyMeshKDTree)
         {
             SerializedProperty meshColliderProp = serializedObject.FindProperty("meshCollider");
             EditorGUILayout.PropertyField(meshColliderProp, new GUIContent("Mesh Collider"));
@@ -43,7 +46,26 @@ public class GravityFieldDrawer : Editor
             SerializedProperty thresholdDistance = serializedObject.FindProperty("thresholdDistance");
             EditorGUILayout.PropertyField(thresholdDistance, new GUIContent("Threshold Distance"));
 
+            SerializedProperty neighborThresholdDistance = serializedObject.FindProperty("neighborThresholdDistance");
+            EditorGUILayout.PropertyField(neighborThresholdDistance, new GUIContent("Neighbour Threshold Distance"));
+
+            SerializedProperty smoothingFactor = serializedObject.FindProperty("smoothingFactor");
+            EditorGUILayout.PropertyField(smoothingFactor, new GUIContent("Smoothing Factor"));
         }
+
+        if ((GravityFieldType)gravityFieldTypeProp.enumValueIndex == GravityFieldType.HighPolyMeshKDTree)
+        {
+            SerializedProperty meshColliderProp = serializedObject.FindProperty("meshCollider");
+            EditorGUILayout.PropertyField(meshColliderProp, new GUIContent("Mesh Collider"));
+        }
+
+        if ((GravityFieldType)gravityFieldTypeProp.enumValueIndex == GravityFieldType.CalculateInterpolatedGravityWithNeighbors)
+        {
+            SerializedProperty meshColliderProp = serializedObject.FindProperty("meshCollider");
+            EditorGUILayout.PropertyField(meshColliderProp, new GUIContent("Mesh Collider"));
+
+        }
+
 
         serializedObject.ApplyModifiedProperties();
     }

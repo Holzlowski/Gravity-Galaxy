@@ -1,41 +1,52 @@
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
+using Unity.VisualScripting;
 using UnityEngine;
 
 public class GravityField : MonoBehaviour
 {
-    [SerializeField]
-    private GravityFieldType gravityFieldType;
-    private Collider gravityFieldCollider;
-
-    [SerializeField]
-    private Collider simpleCollider;
-
-    [SerializeField]
-    private MeshCollider meshCollider;
-
-    [SerializeField]
-    private float gravityStrength = 9.81f;
-
-    [SerializeField]
-    private float gravityFieldMass = 10f;
-
+    [Header("Gravity Field Settings")]
+    [SerializeField] private GravityFieldType gravityFieldType;
+    [SerializeField] private float gravityStrength = 9.81f;
+    [SerializeField] private float gravityFieldMass = 10f;
+    [SerializeField] private int priority = 0;
     private float gravityFieldRadius;
 
-    [SerializeField]
-    private int priority = 0;
+    [Header("Colliders")]
+    [SerializeField] private Collider simpleCollider;
+    [SerializeField] private MeshCollider meshCollider;
+    private Collider gravityFieldCollider;
 
+    [Header("KD-Tree Settings")]
     private KDTreeTriangle kdTree;
-
     private Vector3[] vertices;
     private Vector3[] normals;
     private List<Vector3[]> triangleList;
 
+    [Header("Current Triangle Data")]
     private Triangle currentClosestTriangle;
     private Vector3 currentTriangleCenter;
+    private HashSet<Triangle> currentNeighbors = new HashSet<Triangle>();
 
-    [SerializeField]
-    private float thresholdDistance = 0.1f;
+    [Header("Distance Thresholds")]
+    [SerializeField] private float thresholdDistance = 0.1f;
+    [SerializeField] private float neighborThresholdDistance = 0.1f;
+
+    [Header("Gravity Direction")]
+    private Vector3 gravityDirection = Vector3.zero;
+    private Vector3 previousGravityDirection = Vector3.zero;
+
+    [Header("Smoothing Settings")]
+    [SerializeField] private float smoothingFactor = 10f;
+
+    [Header("Gravity Delay")]
+    public float gravityDelay = 0f; // Verzögerung in Sekunden
+    private float delayTimer = 0f;
+
+    public bool IsDelayActive => delayTimer > 0f;
+
+
 
     void Awake()
     {
@@ -48,9 +59,7 @@ public class GravityField : MonoBehaviour
             vertices = mesh.vertices;
             normals = mesh.normals;
 
-            // kdTree = new KDTree(vertices);
             int[] triangles = mesh.triangles;
-
             triangleList = new List<Vector3[]>();
             for (int i = 0; i < triangles.Length; i += 3)
             {
@@ -58,12 +67,18 @@ public class GravityField : MonoBehaviour
                 triangle[0] = meshCollider.transform.TransformPoint(vertices[triangles[i]]); // In Weltkoordinaten transformieren
                 triangle[1] = meshCollider.transform.TransformPoint(vertices[triangles[i + 1]]);
                 triangle[2] = meshCollider.transform.TransformPoint(vertices[triangles[i + 2]]);
-                //Normalenvektor vom Mesh speichern
-
                 triangleList.Add(triangle);
             }
 
-            kdTree = new KDTreeTriangle(triangleList.ToArray());
+            if (gravityFieldType == GravityFieldType.HighPolyMeshKDTree)
+            {
+                kdTree = new KDTreeTriangle(triangleList.ToArray(), false); // Nachbarn nicht berechnen
+            }
+            else
+            {
+                kdTree = new KDTreeTriangle(triangleList.ToArray(), true); // Nachbarn berechnen
+            }
+
 
             // Zeichne Normalenvektoren von jedem Dreieck
             // foreach (var triangle in triangleList)
@@ -80,19 +95,18 @@ public class GravityField : MonoBehaviour
         }
     }
 
-    // Berechnung des Normalenvektors eines Dreiecks
-    Vector3 CalculateTriangleNormal(Vector3 v1, Vector3 v2, Vector3 v3)
+    public void ResetDelay()
     {
-        // Berechne die Kanten des Dreiecks
-        Vector3 edge1 = v2 - v1;
-        Vector3 edge2 = v3 - v1;
-
-        // Berechne das Kreuzprodukt der Kanten, um den Normalenvektor zu bekommen
-        Vector3 normal = Vector3.Cross(edge1, edge2).normalized;
-
-        return normal;
+        delayTimer = gravityDelay;
     }
 
+    public void UpdateDelayTimer(float deltaTime)
+    {
+        if (delayTimer > 0f)
+        {
+            delayTimer -= deltaTime;
+        }
+    }
     public Vector3 CalculateGravityDirection(Vector3 playerPosition)
     {
         switch (gravityFieldType)
@@ -103,149 +117,203 @@ public class GravityField : MonoBehaviour
                 return transform.up * -1;
             case GravityFieldType.CenterpointInverse:
                 return (playerPosition - transform.position).normalized * gravityStrength;
-            case GravityFieldType.MeshBasedSimple:
-                return CalculateMeshBasedGravity(playerPosition);
-            case GravityFieldType.MeshBasedKDTree:
-                return CalculateMeshBasedGravity(playerPosition);
+            case GravityFieldType.SimpleMesh:
+                return simpleCollider != null ? CalculateSimpleMeshBasedGravity(playerPosition) : LogErrorAndReturnZero("SimpleCollider is not set for SimpleMeshBased gravity field");
+            case GravityFieldType.LowPolyMeshKDTree:
+                return meshCollider != null ? GetInterpolatedGravityDirectionFromLowPolyMesh(playerPosition) : LogErrorAndReturnZero("MeshCollider is not set for MeshBasedKDTree gravity field");
+            case GravityFieldType.HighPolyMeshKDTree:
+                return meshCollider != null ? CalculateMeshBasedGravityHighPoly(playerPosition) : LogErrorAndReturnZero("MeshCollider is not set for MeshBasedKDTree gravity field");
             default:
                 return (transform.position - playerPosition).normalized;
         }
     }
-
-    private Vector3 CalculateMeshBasedGravity(Vector3 playerPosition)
+    private Vector3 LogErrorAndReturnZero(string message)
     {
-        if (simpleCollider != null)
-        {
-            Vector3 closestPoint = simpleCollider.ClosestPoint(playerPosition);
-            //Debug.Log("ClosestPoint ist: " + closestPoint);
-            return (closestPoint - playerPosition).normalized * gravityStrength;
-        }
-        else if (meshCollider != null)
-        {
-            Debug.Log(Vector3.Distance(playerPosition, currentTriangleCenter));
-            // Überprüfe, ob der Spieler eine bestimmte Distanz vom Mittelpunkt des aktuellen Dreiecks überschreitet
-            if (currentClosestTriangle == null || Vector3.Distance(playerPosition, currentTriangleCenter) > thresholdDistance)
-            {
-                // Verwende den KDTree, um das nächstgelegene Dreieck zu finden
-                currentClosestTriangle = kdTree.FindNearestTriangleNode(playerPosition);
-                if (currentClosestTriangle != null)
-                {
-                    currentTriangleCenter = currentClosestTriangle.GetCenter();
-                }
-            }
+        Debug.LogError(message);
+        return Vector3.zero;
+    }
 
+    private Vector3 CalculateSimpleMeshBasedGravity(Vector3 playerPosition)
+    {
+        Vector3 closestPoint = simpleCollider.ClosestPoint(playerPosition);
+        //Debug.Log("ClosestPoint ist: " + closestPoint);
+        return (closestPoint - playerPosition).normalized * gravityStrength;
+    }
+
+
+    private Vector3 GetInterpolatedGravityDirectionFromLowPolyMesh(Vector3 playerPosition)
+    {
+        // Überprüfung, ob der Spieler eine bestimmte Distanz vom Mittelpunkt des aktuellen Dreiecks überschreitet
+        bool needsUpdate = currentClosestTriangle == null ||
+                           Vector3.Distance(playerPosition, currentTriangleCenter) > thresholdDistance;
+
+        if (!needsUpdate && currentClosestTriangle != null)
+        {
+            needsUpdate = currentClosestTriangle.neighbors.Any(neighbor =>
+                Vector3.Distance(playerPosition, neighbor.GetCenter()) < neighborThresholdDistance);
+        }
+
+        if (needsUpdate)
+        {
+            currentClosestTriangle = kdTree.FindNearestTriangleNode(playerPosition);
             if (currentClosestTriangle != null)
             {
-                // Berechne die Gravitationsrichtung basierend auf der Normalen des nächstgelegenen Dreiecks
-                Vector3 interpolatedNormal = currentClosestTriangle.normal;
-                float totalWeight = 1.0f;
+                currentTriangleCenter = currentClosestTriangle.GetCenter();
+            }
+        }
 
-                // Zeichne eine Linie vom Mittelpunkt des nächstgelegenen Dreiecks in Richtung der Normalen
-                Debug.DrawLine(currentTriangleCenter, currentTriangleCenter + currentClosestTriangle.normal, Color.red);
+        // Update der Nachbarn, bevor die Berechnungen fortfährt
+        UpdateNeighbors();
 
-                // Interpoliere die Normalen der Nachbarn basierend auf dem Abstand
-                foreach (var neighbor in currentClosestTriangle.neighbors)
-                {
-                    // Zeichne eine Linie vom Mittelpunkt des Nachbar-Dreiecks in Richtung der Normalen
-                    Vector3 neighborCenter = neighbor.GetCenter();
-                    Debug.DrawLine(neighborCenter, neighborCenter + neighbor.normal, Color.blue);
+        if (currentClosestTriangle != null)
+        {
+            Vector3 interpolatedGravity = Vector3.zero;
+            float totalWeight = 0.0f;
 
-                    float distance = Vector3.Distance(playerPosition, neighborCenter);
-                    float weight = 1f / (distance + 0.001f); // Vermeide Division durch Null
-                    interpolatedNormal = Vector3.Lerp(interpolatedNormal, neighbor.normal, weight);
-                    totalWeight += weight;
-                }
+            foreach (var neighbor in currentNeighbors)
+            {
+                Vector3 neighborCenter = neighbor.GetCenter();
+                Vector3 normal = neighbor.normal;
 
-                interpolatedNormal /= totalWeight;
+                float distance = Vector3.Distance(playerPosition, neighborCenter);
+                float weight = 1f / (distance + 0.001f); // Direkte Gewichtung
 
-                // Berechne die entgegengesetzte Richtung der interpolierten Normale als Gravitation
-                Vector3 gravityDirection = -interpolatedNormal.normalized * gravityStrength;
+                interpolatedGravity += normal * weight;
+                totalWeight += weight;
+            }
 
-                return gravityDirection;
+            // Normale interpolieren und Richtung berechnen
+            if (totalWeight > 0)
+            {
+                interpolatedGravity /= totalWeight;
             }
             else
             {
-                Debug.LogError("No closest triangle found in KDTree");
-                return Vector3.zero;
+                Debug.LogWarning("Total weight is zero, fallback to current triangle normal");
+                interpolatedGravity = currentClosestTriangle.normal;
             }
+
+            // Entgegengesetzte Richtung für die Schwerkraft
+            Vector3 targetGravityDirection = -interpolatedGravity.normalized * gravityStrength;
+
+            // Initialisierung von previousGravityDirection nur einmal
+            if (previousGravityDirection == Vector3.zero)
+            {
+                previousGravityDirection = targetGravityDirection;
+            }
+
+            // Glätte den Übergang zwischen der vorherigen und der neuen Richtung
+            gravityDirection = Vector3.Lerp(previousGravityDirection, targetGravityDirection, Time.deltaTime * smoothingFactor);
+
+            // Speichere die aktuelle Richtung für den nächsten Frame
+            previousGravityDirection = gravityDirection;
+
+            // Debug: Visualisiere interpolierte Richtung
+            //Debug.DrawLine(playerPosition, playerPosition + gravityDirection, Color.green);
+
+            return gravityDirection;
         }
         else
         {
-            Debug.LogError("MeshCollider is not set for MeshBased gravity field");
+            Debug.LogError("No closest triangle found in KDTree");
             return Vector3.zero;
         }
     }
 
-    // Hilfsfunktion, um den nächstgelegenen Punkt auf einer Linie zu finden
-    private Vector3 ClosestPointOnLineSegment(Vector3 point, Vector3 lineStart, Vector3 lineEnd)
+    private Vector3 CalculateMeshBasedGravityHighPoly(Vector3 playerPosition)
     {
-        Vector3 line = lineEnd - lineStart;
-        float lineLengthSquared = line.sqrMagnitude;
-        if (lineLengthSquared == 0.0f)
+        // Finde das nächste Dreieck 
+        Triangle closestTriangle = kdTree.FindNearestTriangleNode(playerPosition);
+
+        //Interpoliere die Normalen
+        return -closestTriangle.normal * gravityStrength;
+    }
+
+    // private Vector3 CalculateTriangleBasedGravity(Vector3 playerPosition)
+    // {
+    //     // Finde das nächste Dreieck
+    //     Triangle closestNode = kdTree.FindNearestTriangleNode(playerPosition);
+    //     Vector3[] closestTriangle = closestNode.vertices;
+
+    //     // Berechne die baryzentrischen Koordinaten des Spielerpunktes
+    //     Vector3 baryCoords = kdTree.CalculateBarycentricCoordinates(playerPosition, closestTriangle[0], closestTriangle[1], closestTriangle[2]);
+
+    //     // Interpoliere die Normalen der Dreiecke
+    //     Vector3 interpolatedNormal = closestNode.normal * baryCoords.x;
+
+    //     // Berücksichtige die benachbarten Dreiecke
+    //     foreach (Triangle neighbor in closestNode.neighbors)
+    //     {
+    //         Vector3 neighborBaryCoords = kdTree.CalculateBarycentricCoordinates(playerPosition, neighbor.vertices[0], neighbor.vertices[1], neighbor.vertices[2]);
+    //         interpolatedNormal = Vector3.Lerp(interpolatedNormal, neighbor.normal, neighborBaryCoords.x);
+    //     }
+
+    //     interpolatedNormal = interpolatedNormal.normalized;
+
+    //     return -interpolatedNormal * gravityStrength;
+    // }
+
+    // // Hilfsfunktion, um den nächstgelegenen Punkt auf einer Linie zu finden
+    // public float DistanceToEdge(Vector3 point, Vector3 edgeStart, Vector3 edgeEnd)
+    // {
+    //     Vector3 edge = edgeEnd - edgeStart;
+    //     Vector3 pointToStart = point - edgeStart;
+
+    //     float edgeLengthSquared = edge.sqrMagnitude;
+    //     if (edgeLengthSquared == 0.0f)
+    //     {
+    //         return pointToStart.magnitude;
+    //     }
+
+    //     float t = Vector3.Dot(pointToStart, edge) / edgeLengthSquared;
+    //     t = Mathf.Clamp01(t);
+
+    //     Vector3 projection = edgeStart + t * edge;
+    //     return (point - projection).magnitude;
+    // }
+
+    // private Vector3 InterpolateNormalsAtEdge(Vector3 playerPosition, Triangle triangleA, Triangle triangleB, Vector3 edgeStart, Vector3 edgeEnd, float gravityStrength)
+    // {
+    //     // Berechne die Position des Spielers relativ zur Kante
+    //     float t = Vector3.Dot(playerPosition - edgeStart, edgeEnd - edgeStart) / (edgeEnd - edgeStart).sqrMagnitude;
+    //     t = Mathf.Clamp01(t); // Stelle sicher, dass t im Bereich [0, 1] liegt
+
+    //     // Interpoliere die Normalen der beiden Dreiecke
+    //     Vector3 interpolatedNormal = Vector3.Lerp(triangleA.normal, triangleB.normal, t).normalized;
+
+    //     return -interpolatedNormal * gravityStrength;
+    // }
+
+    private void UpdateNeighbors()
+    {
+        HashSet<Triangle> newNeighbors = new HashSet<Triangle>(currentClosestTriangle.neighbors);
+
+        // Erstellung einer Kopie der aktuellen Nachbarn, um sie zu iterieren
+        var currentNeighborsCopy = currentNeighbors.ToList();
+
+        foreach (var neighbor in currentNeighborsCopy)
         {
-            return lineStart;
+            // Überprüfung, ob der Nachbar noch zu den aktuellen Nachbarn gehört
+            if (!newNeighbors.Contains(neighbor))
+            {
+                // Entferne Nachbarn, die nicht mehr relevant sind
+                currentNeighbors.Remove(neighbor);
+            }
         }
 
-        float t = Vector3.Dot(point - lineStart, line) / lineLengthSquared;
-        t = Mathf.Clamp01(t);
-        return lineStart + t * line;
-    }
-
-    private float DistanceToTriangle(Vector3 point, Vector3[] triangle)
-    {
-        Vector3 triangleCenter = (triangle[0] + triangle[1] + triangle[2]) / 3.0f;
-        return Vector3.Distance(point, triangleCenter);
-    }
-
-    public float DistanceToEdge(Vector3 point, Vector3 edgeStart, Vector3 edgeEnd)
-    {
-        Vector3 edge = edgeEnd - edgeStart;
-        Vector3 pointToStart = point - edgeStart;
-
-        float edgeLengthSquared = edge.sqrMagnitude;
-        if (edgeLengthSquared == 0.0f)
+        // Neue Nachbarn werden hinzugefügt
+        foreach (var neighbor in newNeighbors)
         {
-            return pointToStart.magnitude;
-        }
-
-        float t = Vector3.Dot(pointToStart, edge) / edgeLengthSquared;
-        t = Mathf.Clamp01(t);
-
-        Vector3 projection = edgeStart + t * edge;
-        return (point - projection).magnitude;
-    }
-
-    private Vector3 InterpolateNormalsAtEdge(Vector3 playerPosition, Triangle triangleA, Triangle triangleB, Vector3 edgeStart, Vector3 edgeEnd, float gravityStrength)
-    {
-        // Berechne die Position des Spielers relativ zur Kante
-        float t = Vector3.Dot(playerPosition - edgeStart, edgeEnd - edgeStart) / (edgeEnd - edgeStart).sqrMagnitude;
-        t = Mathf.Clamp01(t); // Stelle sicher, dass t im Bereich [0, 1] liegt
-
-        // Interpoliere die Normalen der beiden Dreiecke
-        Vector3 interpolatedNormal = Vector3.Lerp(triangleA.normal, triangleB.normal, t).normalized;
-
-        return -interpolatedNormal * gravityStrength;
-    }
-
-    private Vector3 GetNormalFromMesh(Vector3 closestPoint)
-    {
-        // Finde den nächsten Punkt im Mesh und gib die Normalenrichtung zurück
-        int closestIndex = System.Array.IndexOf(vertices, closestPoint);
-
-        if (closestIndex >= 0 && closestIndex < normals.Length)
-        {
-            return normals[closestIndex];
-        }
-        else
-        {
-            Debug.LogError("Closest vertex index out of range.");
-            return Vector3.zero; // Fallback-Normale
+            if (!currentNeighbors.Contains(neighbor))
+            {
+                currentNeighbors.Add(neighbor);
+            }
         }
     }
-
     public float GravityStrength => gravityStrength;
     public float GravityFieldMass => gravityFieldMass;
     public float GravityFieldRadius => gravityFieldRadius;
+    public float GravityDelay => gravityDelay;
     public GravityFieldType GravityFieldType => gravityFieldType;
     public int Priority => priority;
 }
@@ -255,105 +323,130 @@ public enum GravityFieldType
     Centerpoint,
     Down,
     CenterpointInverse,
-    MeshBasedSimple,
-    MeshBasedKDTree,
+    SimpleMesh,
+    LowPolyMeshKDTree,
+    HighPolyMeshKDTree,
+    CalculateInterpolatedGravityWithNeighbors
 }
 
 
 //DER CODE HAT FUNKTIONIERT, ABER ES GAB PROBLEME MIT DER INTERPOLATION
-//  // // Finde das nächste Dreieck
-//             // Triangle closestNode = kdTree.FindNearestTriangleNode(playerPosition);
-//             // Vector3[] closestTriangle = closestNode.vertices;
+//Definiere eine Schwellenentfernung für die Interpolation
+// float thresholdDistance = 0.1f; // Passe diesen Wert nach Bedarf an
 
-//             // // Berechne die baryzentrischen Koordinaten des Spielerpunktes
-//             // Vector3 baryCoords = kdTree.CalculateBarycentricCoordinates(playerPosition, closestTriangle[0], closestTriangle[1], closestTriangle[2]);
+// //Finde das nächste Dreieck
+// Triangle closestTriangle = kdTree.FindNearestTriangleNode(playerPosition);
+// List<Triangle> neighbors = closestTriangle.neighbors;
 
-//             // // Interpoliere die Normalen der Dreiecke
-//             // Vector3 interpolatedNormal = closestNode.normal * baryCoords.x;
+// Debug.DrawLine(closestTriangle.GetCenter(), closestTriangle.GetCenter() + closestTriangle.normal, Color.blue, 1f);
 
-//             // // Berücksichtige die benachbarten Dreiecke
-//             // foreach (Triangle neighbor in closestNode.neighbors)
-//             // {
-//             //     Vector3 neighborBaryCoords = kdTree.CalculateBarycentricCoordinates(playerPosition, neighbor.vertices[0], neighbor.vertices[1], neighbor.vertices[2]);
-//             //     interpolatedNormal = Vector3.Lerp(interpolatedNormal, neighbor.normal, neighborBaryCoords.x);
-//             // }
+// //Distanzen des Spielers zu den Nachbarn und deren Kanten
+// float minEdgeDistance = float.MaxValue;
+// Triangle closestNeighbor = null;
+// Vector3 closestEdgeStart = Vector3.zero;
+// Vector3 closestEdgeEnd = Vector3.zero;
 
-//             // interpolatedNormal = interpolatedNormal.normalized;
+// foreach (Triangle neighbor in neighbors)
+// {
+//     Debug.DrawLine(neighbor.GetCenter(), neighbor.GetCenter() + neighbor.normal, Color.red, 1f);
 
-//             // return -interpolatedNormal * gravityStrength;
+//     for (int i = 0; i < 3; i++)
+//     {
+//         Vector3 edgeStart = neighbor.vertices[i];
+//         Vector3 edgeEnd = neighbor.vertices[(i + 1) % 3];
+//         float edgeDistance = DistanceToEdge(playerPosition, edgeStart, edgeEnd);
+//         if (edgeDistance < minEdgeDistance)
+//         {
+//             minEdgeDistance = edgeDistance;
+//             closestNeighbor = neighbor;
+//             closestEdgeStart = edgeStart;
+//             closestEdgeEnd = edgeEnd;
+//         }
+//     }
+// }
 
-//             // // Finde das nächste Dreieck 
-//             // Triangle closestTriangle = kdTree.FindNearestTriangleNode(playerPosition);
-//             // //Vector3[] closestTriangleVertices = closestTriangle.vertices;
+// //Zeichne eine Linie vom Spieler zur nächstgelegenen Kante
+// if (closestNeighbor != null)
+// {
+//     Vector3 closestPointOnEdge = ClosestPointOnLineSegment(playerPosition, closestEdgeStart, closestEdgeEnd);
+//     Debug.DrawLine(playerPosition, closestPointOnEdge, Color.green, 1f);
+// }
 
-//             // // // Berechne die Mitte des Dreiecks 
-//             // // Vector3 triangleCenter = (closestTriangle[0] + closestTriangle[1] + closestTriangle[2]) / 3.0f;
+// //Interpolation der Normalen der Dreiecke mit Slerp
+// Vector3 interpolatedNormal;
+// if (closestNeighbor != null && minEdgeDistance < thresholdDistance)
+// {
+//     Debug.DrawLine(closestNeighbor.GetCenter(), closestNeighbor.GetCenter() + closestNeighbor.normal, Color.yellow, 1f);
+//     interpolatedNormal = Vector3.Slerp(closestTriangle.normal, closestNeighbor.normal, minEdgeDistance / thresholdDistance);
+// }
+// else
+// {
+//     interpolatedNormal = closestTriangle.normal;
+// }
 
-//             // // Zeichne eine Linie vom Spieler zur Mitte des Dreiecks
-//             // //Debug.DrawLine(playerPosition, triangleCenter, Color.red, 1f);
+// return -interpolatedNormal * gravityStrength;
 
-//             // // Berechne die Normale des nächstgelegenen Dreiecks
-//             // //Vector3 normal = Vector3.Cross(closestTriangleVertices[1] - closestTriangleVertices[0], closestTriangleVertices[2] - closestTriangleVertices[0]).normalized;
-//             // //Interpoliere die Normalen
-//             // return -closestTriangle.normal * gravityStrength;
+// // Wenn der Spieler nicht nahe einer Kante ist, nutze die Normale des aktuellen Dreiecks
+// return -closestTriangle.normal * gravityStrength;
 
-//             // Definiere eine Schwellenentfernung für die Interpolation
-//             //float thresholdDistance = 0.1f; // Passe diesen Wert nach Bedarf an
+// Definiere eine Schwellenentfernung für die Interpolation
+//     float thresholdDistance = 0.1f; // Passe diesen Wert nach Bedarf an
 
-//             // Finde das nächste Dreieck
-//             Triangle closestTriangle = kdTree.FindNearestTriangleNode(playerPosition);
-//             List<Triangle> neighbors = closestTriangle.neighbors;
+// Finde das nächste Dreieck
+//     Triangle closestTriangle = kdTree.FindNearestTriangleNode(playerPosition);
+// List<Triangle> neighbors = closestTriangle.neighbors;
 
-//             //Debug.DrawLine(closestTriangle.CalculateCenter(), closestTriangle.CalculateCenter() + closestTriangle.normal, Color.blue, 1f);
+// Debug.DrawLine(closestTriangle.CalculateCenter(), closestTriangle.CalculateCenter() + closestTriangle.normal, Color.blue, 1f);
 
-//             // Distanzen des Spielers zu den Nachbarn und deren Kanten
-//             float minEdgeDistance = float.MaxValue;
-//             Triangle closestNeighbor = null;
-//             Vector3 closestEdgeStart = Vector3.zero;
-//             Vector3 closestEdgeEnd = Vector3.zero;
+// Distanzen des Spielers zu den Nachbarn und deren Kanten
+//     float minEdgeDistance = float.MaxValue;
+// Triangle closestNeighbor = null;
+// Vector3 closestEdgeStart = Vector3.zero;
+// Vector3 closestEdgeEnd = Vector3.zero;
 
-//             foreach (Triangle neighbor in neighbors)
-//             {
-//                 Debug.DrawLine(neighbor.CalculateCenter(), neighbor.CalculateCenter() + neighbor.normal, Color.red, 1f);
+// foreach (Triangle neighbor in neighbors)
+// {
+//     Debug.DrawLine(neighbor.CalculateCenter(), neighbor.CalculateCenter() + neighbor.normal, Color.red, 1f);
 
-//                 for (int i = 0; i < 3; i++)
-//                 {
-//                     Vector3 edgeStart = neighbor.vertices[i];
-//                     Vector3 edgeEnd = neighbor.vertices[(i + 1) % 3];
-//                     float edgeDistance = DistanceToEdge(playerPosition, edgeStart, edgeEnd);
-//                     if (edgeDistance < minEdgeDistance)
-//                     {
-//                         minEdgeDistance = edgeDistance;
-//                         closestNeighbor = neighbor;
-//                         closestEdgeStart = edgeStart;
-//                         closestEdgeEnd = edgeEnd;
-//                     }
-//                 }
-//             }
+//     for (int i = 0; i < 3; i++)
+//     {
+//         Vector3 edgeStart = neighbor.vertices[i];
+//         Vector3 edgeEnd = neighbor.vertices[(i + 1) % 3];
+//         float edgeDistance = DistanceToEdge(playerPosition, edgeStart, edgeEnd);
+//         if (edgeDistance < minEdgeDistance)
+//         {
+//             minEdgeDistance = edgeDistance;
+//             closestNeighbor = neighbor;
+//             closestEdgeStart = edgeStart;
+//             closestEdgeEnd = edgeEnd;
+//         }
+//     }
+// }
 
-//             // Zeichne eine Linie vom Spieler zur nächstgelegenen Kante
-//             if (closestNeighbor != null)
-//             {
-//                 Vector3 closestPointOnEdge = ClosestPointOnLineSegment(playerPosition, closestEdgeStart, closestEdgeEnd);
-//                 Debug.DrawLine(playerPosition, closestPointOnEdge, Color.green, 1f);
-//             }
+// Zeichne eine Linie vom Spieler zur nächstgelegenen Kante
+//     if (closestNeighbor != null)
+// {
+//     Vector3 closestPointOnEdge = ClosestPointOnLineSegment(playerPosition, closestEdgeStart, closestEdgeEnd);
+//     Debug.DrawLine(playerPosition, closestPointOnEdge, Color.green, 1f);
+// }
 
-//             // Interpolation der Normalen der Dreiecke mit Slerp
-//             Vector3 interpolatedNormal;
-//             if (closestNeighbor != null && minEdgeDistance < thresholdDistance)
-//             {
-//                 Debug.DrawLine(closestNeighbor.CalculateCenter(), closestNeighbor.CalculateCenter() + closestNeighbor.normal, Color.yellow, 1f);
-//                 interpolatedNormal = Vector3.Slerp(closestTriangle.normal, closestNeighbor.normal, minEdgeDistance / thresholdDistance);
-//             }
-//             else
-//             {
-//                 interpolatedNormal = closestTriangle.normal;
-//             }
+// Interpolation der Normalen der Dreiecke mit Slerp
+// Vector3 interpolatedNormal;
+// if (closestNeighbor != null && minEdgeDistance < thresholdDistance)
+// {
+//     Debug.DrawLine(closestNeighbor.CalculateCenter(), closestNeighbor.CalculateCenter() + closestNeighbor.normal, Color.yellow, 1f);
+//     interpolatedNormal = Vector3.Slerp(closestTriangle.normal, closestNeighbor.normal, minEdgeDistance / thresholdDistance);
+// }
+// else
+// {
+//     interpolatedNormal = closestTriangle.normal;
+// }
 
-//             return -interpolatedNormal * gravityStrength;
+// return -interpolatedNormal * gravityStrength;
 
-//             // // Wenn der Spieler nicht nahe einer Kante ist, nutze die Normale des aktuellen Dreiecks
-//             // return -closestTriangle.normal * gravityStrength;
+// // Wenn der Spieler nicht nahe einer Kante ist, nutze die Normale des aktuellen Dreiecks
+// return -closestTriangle.normal * gravityStrength;
+
 
 //------------------------------------OLD CODE------------------------------------
 
@@ -417,66 +510,3 @@ public enum GravityFieldType
 
 // // Rückgabe der kombinierten Richtung als Gravitationsvektor
 // return -gravityDirection * gravityStrength;
-
-
-// Vector3 CalculateNormalFromMesh(Vector3 closestPoint, Mesh mesh)
-// {
-//     // Hole die Mesh-Daten
-//     Vector3[] vertices = mesh.vertices;
-//     int[] triangles = mesh.triangles;
-
-
-//     // Suche das nächste Dreieck
-//     int nearestTriangle = -1;
-//     float minDistance = Mathf.Infinity;
-
-//     for (int i = 0; i < triangles.Length; i += 3)
-//     {
-//         Vector3 p1 = vertices[triangles[i]];
-//         Vector3 p2 = vertices[triangles[i + 1]];
-//         Vector3 p3 = vertices[triangles[i + 2]];
-
-//         Vector3 center = (p1 + p2 + p3) / 3.0f;
-//         float distance = Vector3.Distance(center, closestPoint);
-
-//         if (distance < minDistance)
-//         {
-//             minDistance = distance;
-//             nearestTriangle = i;
-//         }
-//     }
-
-//     // Berechne die Normale des Dreiecks
-//     if (nearestTriangle != -1)
-//     {
-//         Vector3 p1 = vertices[triangles[nearestTriangle]];
-//         Vector3 p2 = vertices[triangles[nearestTriangle + 1]];
-//         Vector3 p3 = vertices[triangles[nearestTriangle + 2]];
-
-//         Vector3 normal = Vector3.Cross(p2 - p1, p3 - p1).normalized;
-//         Debug.Log("Normal: " + normal);
-//         return normal;
-//     }
-
-//     return Vector3.up; // Fallback-Normale
-// }
-
-// Vector3 CalculateNormalFromNeighbors(Vector3 closestPoint, KDTree kdTree)
-// {
-//     // Suche die nächsten Punkte im KD-Tree
-//     Vector3[] neighbors = kdTree.FindKNearest(closestPoint, 5).ToArray();
-
-//     if (neighbors.Length < 3)
-//         return Vector3.up; // Fallback-Normale, wenn es zu wenige Punkte gibt
-
-//     // Berechne die Normalen durch Kreuzprodukt
-//     Vector3 normal = Vector3.zero;
-//     for (int i = 0; i < neighbors.Length - 1; i++)
-//     {
-//         Vector3 p1 = neighbors[i];
-//         Vector3 p2 = neighbors[i + 1];
-//         normal += Vector3.Cross(p1 - closestPoint, p2 - closestPoint);
-//     }
-
-//     return -normal.normalized;
-// }

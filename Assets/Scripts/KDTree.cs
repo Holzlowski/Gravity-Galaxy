@@ -5,16 +5,16 @@ using UnityEngine;
 public class KDTree
 {
     // Innere Klasse, um Knoten des Baums darzustellen
-    private class Node
+    private class Vertex
     {
         public Vector3 point; // Der Punkt im 3D-Raum, den der Knoten repräsentiert
         public Vector3 normal; // Die Normale des Punktes
-        public Node left;     // Linker Teilbaum (niedrigere Werte entlang der aktuellen Achse)
-        public Node right;    // Rechter Teilbaum (höhere Werte entlang der aktuellen Achse)
+        public Vertex left;     // Linker Teilbaum (niedrigere Werte entlang der aktuellen Achse)
+        public Vertex right;    // Rechter Teilbaum (höhere Werte entlang der aktuellen Achse)
 
     }
 
-    private Node root; // Wurzel des KD-Baums
+    private Vertex root; // Wurzel des KD-Baums
 
     // Konstruktor, der den Baum aus einem Array von 3D-Punkten erstellt
     public KDTree(Vector3[] points, Vector3[] normals)
@@ -23,7 +23,7 @@ public class KDTree
     }
 
     // Rekursive Methode zum Erstellen des KD-Baums
-    private Node BuildTree(Vector3[] points, Vector3[] normals, int depth)
+    private Vertex BuildTree(Vector3[] points, Vector3[] normals, int depth)
     {
         // Basisfall: Wenn keine Punkte mehr übrig sind, gibt es keinen Knoten
         if (points.Length == 0)
@@ -39,7 +39,7 @@ public class KDTree
         int median = points.Length / 2;
 
         // Erstelle einen neuen Knoten mit dem Median-Punkt
-        Node node = new Node
+        Vertex node = new Vertex
         {
             point = points[median],
             normal = normals[median],
@@ -60,7 +60,7 @@ public class KDTree
     }
 
     // Rekursive Methode, um den nächsten Punkt zu finden
-    private Node FindNearest(Node node, Vector3 target, int depth)
+    private Vertex FindNearest(Vertex node, Vector3 target, int depth)
     {
         // Basisfall: Wenn der Knoten null ist, gibt es keine nähere Option
         if (node == null)
@@ -70,11 +70,11 @@ public class KDTree
         int axis = depth % 3;
 
         // Entscheide, welchen Teilbaum du zuerst durchsuchen möchtest
-        Node nextBranch = (target[axis] < node.point[axis]) ? node.left : node.right;
-        Node otherBranch = (target[axis] < node.point[axis]) ? node.right : node.left;
+        Vertex nextBranch = (target[axis] < node.point[axis]) ? node.left : node.right;
+        Vertex otherBranch = (target[axis] < node.point[axis]) ? node.right : node.left;
 
         // Suche rekursiv im bevorzugten Teilbaum
-        Node best = CloserDistance(target, FindNearest(nextBranch, target, depth + 1), node);
+        Vertex best = CloserDistance(target, FindNearest(nextBranch, target, depth + 1), node);
 
         // Prüfe, ob es im anderen Teilbaum möglicherweise einen näheren Punkt gibt
         if (otherBranch != null && Mathf.Abs(target[axis] - node.point[axis]) < Vector3.Distance(target, best.point))
@@ -87,7 +87,7 @@ public class KDTree
     }
 
     // Hilfsmethode, um den näheren von zwei Knoten zu bestimmen
-    private Node CloserDistance(Vector3 target, Node a, Node b)
+    private Vertex CloserDistance(Vector3 target, Vertex a, Vertex b)
     {
         // Wenn einer der Knoten null ist, gib den anderen zurück
         if (a == null) return b;

@@ -160,6 +160,8 @@ MonoBehaviour:
   gravityFieldMass: 10
   priority: 1
   thresholdDistance: 0.1
+  neighborThresholdDistance: 0.1
+  smoothingFactor: 5
 --- !u!65 &22544884
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -263,12 +265,12 @@ PrefabInstance:
     - target: {fileID: 2984430431698697990, guid: 36fe5dfc6f72ace4ea5ddf696b7e5eb1,
         type: 3}
       propertyPath: m_IsActive
-      value: 1
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 3242088691679072745, guid: 36fe5dfc6f72ace4ea5ddf696b7e5eb1,
         type: 3}
       propertyPath: baseJumpForce
-      value: 30
+      value: 5
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
@@ -332,7 +334,9 @@ MonoBehaviour:
   gravityStrength: 9.81
   gravityFieldMass: 10
   priority: 1
-  thresholdDistance: 2
+  thresholdDistance: 0.2
+  neighborThresholdDistance: 0.5
+  smoothingFactor: 5
 --- !u!4 &138769708
 Transform:
   m_ObjectHideFlags: 0
@@ -1019,12 +1023,12 @@ PrefabInstance:
     - target: {fileID: 2984430431698697990, guid: 36fe5dfc6f72ace4ea5ddf696b7e5eb1,
         type: 3}
       propertyPath: m_IsActive
-      value: 1
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 3242088691679072745, guid: 36fe5dfc6f72ace4ea5ddf696b7e5eb1,
         type: 3}
       propertyPath: baseJumpForce
-      value: 10
+      value: 5
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
@@ -1168,6 +1172,79 @@ MeshFilter:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1163197192}
   m_Mesh: {fileID: 10202, guid: 0000000000000000e000000000000000, type: 0}
+--- !u!1001 &1186402560
+PrefabInstance:
+  m_ObjectHideFlags: 0
+  serializedVersion: 2
+  m_Modification:
+    serializedVersion: 3
+    m_TransformParent: {fileID: 0}
+    m_Modifications:
+    - target: {fileID: 611359743151083824, guid: 666f70ea217188349b4ff55f712cd659,
+        type: 3}
+      propertyPath: gravityFieldType
+      value: 5
+      objectReference: {fileID: 0}
+    - target: {fileID: 3706011488146985276, guid: 666f70ea217188349b4ff55f712cd659,
+        type: 3}
+      propertyPath: m_Name
+      value: Torus HP GF
+      objectReference: {fileID: 0}
+    - target: {fileID: 6320334502329274456, guid: 666f70ea217188349b4ff55f712cd659,
+        type: 3}
+      propertyPath: m_LocalPosition.x
+      value: 3.0757446
+      objectReference: {fileID: 0}
+    - target: {fileID: 6320334502329274456, guid: 666f70ea217188349b4ff55f712cd659,
+        type: 3}
+      propertyPath: m_LocalPosition.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 6320334502329274456, guid: 666f70ea217188349b4ff55f712cd659,
+        type: 3}
+      propertyPath: m_LocalPosition.z
+      value: 62.926624
+      objectReference: {fileID: 0}
+    - target: {fileID: 6320334502329274456, guid: 666f70ea217188349b4ff55f712cd659,
+        type: 3}
+      propertyPath: m_LocalRotation.w
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 6320334502329274456, guid: 666f70ea217188349b4ff55f712cd659,
+        type: 3}
+      propertyPath: m_LocalRotation.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 6320334502329274456, guid: 666f70ea217188349b4ff55f712cd659,
+        type: 3}
+      propertyPath: m_LocalRotation.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 6320334502329274456, guid: 666f70ea217188349b4ff55f712cd659,
+        type: 3}
+      propertyPath: m_LocalRotation.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 6320334502329274456, guid: 666f70ea217188349b4ff55f712cd659,
+        type: 3}
+      propertyPath: m_LocalEulerAnglesHint.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 6320334502329274456, guid: 666f70ea217188349b4ff55f712cd659,
+        type: 3}
+      propertyPath: m_LocalEulerAnglesHint.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 6320334502329274456, guid: 666f70ea217188349b4ff55f712cd659,
+        type: 3}
+      propertyPath: m_LocalEulerAnglesHint.z
+      value: 0
+      objectReference: {fileID: 0}
+    m_RemovedComponents: []
+    m_RemovedGameObjects: []
+    m_AddedGameObjects: []
+    m_AddedComponents: []
+  m_SourcePrefab: {fileID: 100100000, guid: 666f70ea217188349b4ff55f712cd659, type: 3}
 --- !u!1 &1230943736
 GameObject:
   m_ObjectHideFlags: 0
@@ -1396,7 +1473,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   activeGravityFields: []
-  rotationToPlanetSpeed: 1
+  rotationToPlanetSpeed: 2
   useGravityLaw: 1
 --- !u!1 &1473576734
 GameObject:
@@ -7969,3 +8046,4 @@ SceneRoots:
   - {fileID: 887517013}
   - {fileID: 67757521}
   - {fileID: 138769708}
+  - {fileID: 1186402560}

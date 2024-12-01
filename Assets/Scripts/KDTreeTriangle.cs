@@ -5,10 +5,13 @@ public class KDTreeTriangle
 {
     private Triangle root;
 
-    public KDTreeTriangle(Vector3[][] triangles)
+    public KDTreeTriangle(Vector3[][] triangles, bool buildNeighbors = true)
     {
         root = BuildTree(triangles, 0);
-        BuildNeighbors(root, triangles);
+        if (buildNeighbors)
+        {
+            BuildNeighbors(root, triangles);
+        }
     }
 
     private Triangle BuildTree(Vector3[][] triangles, int depth)

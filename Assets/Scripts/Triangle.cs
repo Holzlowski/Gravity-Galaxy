@@ -17,7 +17,7 @@ public class Triangle
     {
         this.vertices = vertices;
         this.normal = normal;
-        this.neighbors = new List<Triangle>();
+        neighbors = new List<Triangle>();
     }
 
     public Vector3 GetCenter()

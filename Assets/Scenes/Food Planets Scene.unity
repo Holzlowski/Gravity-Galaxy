@@ -160,6 +160,8 @@ MonoBehaviour:
   gravityFieldMass: 10
   priority: 1
   thresholdDistance: 0.1
+  neighborThresholdDistance: 0.1
+  smoothingFactor: 10
 --- !u!65 &22544884
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -903,6 +905,16 @@ PrefabInstance:
       propertyPath: gravityFieldType
       value: 4
       objectReference: {fileID: 0}
+    - target: {fileID: 299452601642577651, guid: f1197a62d60c6b64e957713b44f467ef,
+        type: 3}
+      propertyPath: thresholdDistance
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 299452601642577651, guid: f1197a62d60c6b64e957713b44f467ef,
+        type: 3}
+      propertyPath: neighborThresholdDistance
+      value: 0.2
+      objectReference: {fileID: 0}
     - target: {fileID: 5372299230635835626, guid: f1197a62d60c6b64e957713b44f467ef,
         type: 3}
       propertyPath: m_LocalPosition.x
@@ -1126,6 +1138,16 @@ PrefabInstance:
         type: 3}
       propertyPath: gravityFieldType
       value: 4
+      objectReference: {fileID: 0}
+    - target: {fileID: 299452601642577651, guid: f1197a62d60c6b64e957713b44f467ef,
+        type: 3}
+      propertyPath: thresholdDistance
+      value: 2
+      objectReference: {fileID: 0}
+    - target: {fileID: 299452601642577651, guid: f1197a62d60c6b64e957713b44f467ef,
+        type: 3}
+      propertyPath: neighborThresholdDistance
+      value: 0.2
       objectReference: {fileID: 0}
     - target: {fileID: 5372299230635835626, guid: f1197a62d60c6b64e957713b44f467ef,
         type: 3}
@@ -2182,8 +2204,23 @@ PrefabInstance:
       objectReference: {fileID: 1377269317}
     - target: {fileID: 299452601642577651, guid: f1197a62d60c6b64e957713b44f467ef,
         type: 3}
+      propertyPath: smoothingFactor
+      value: 20
+      objectReference: {fileID: 0}
+    - target: {fileID: 299452601642577651, guid: f1197a62d60c6b64e957713b44f467ef,
+        type: 3}
       propertyPath: gravityFieldType
       value: 4
+      objectReference: {fileID: 0}
+    - target: {fileID: 299452601642577651, guid: f1197a62d60c6b64e957713b44f467ef,
+        type: 3}
+      propertyPath: thresholdDistance
+      value: 2
+      objectReference: {fileID: 0}
+    - target: {fileID: 299452601642577651, guid: f1197a62d60c6b64e957713b44f467ef,
+        type: 3}
+      propertyPath: neighborThresholdDistance
+      value: 0.2
       objectReference: {fileID: 0}
     - target: {fileID: 5372299230635835626, guid: f1197a62d60c6b64e957713b44f467ef,
         type: 3}
@@ -2323,7 +2360,7 @@ MonoBehaviour:
   target: {fileID: 1294120413}
   cameraTransform: {fileID: 330585546}
   rotationSpeed: 60
-  smoothSpeed: 5
+  smoothSpeed: 20
   offset: {x: 0, y: 2.5, z: -10}
 --- !u!4 &2042051696
 Transform:

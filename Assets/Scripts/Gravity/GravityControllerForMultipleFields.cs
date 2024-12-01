@@ -6,7 +6,7 @@ using UnityEngine;
 
 public class GravityControllerForMultipleFields : MonoBehaviour
 {
-    Rigidbody rb;
+    private Rigidbody rb;
 
     [SerializeField]
     private List<GravityField> activeGravityFields = new List<GravityField>(); // Liste der aktiven Gravitationsfelder
@@ -14,9 +14,7 @@ public class GravityControllerForMultipleFields : MonoBehaviour
 
     [SerializeField]
     private float rotationToPlanetSpeed = 10f;
-
-    // [SerializeField]
-    // private float rotationAroundSun = 0.01f;
+    private int lastAppliedPriority = -1;
 
     [SerializeField]
     private bool useGravityLaw = true;
@@ -49,11 +47,41 @@ public class GravityControllerForMultipleFields : MonoBehaviour
             return;
         }
 
+        // Aktualisiere die Verzögerungstimer aller GravityFields
+        foreach (var gravityField in activeGravityFields)
+        {
+            gravityField.UpdateDelayTimer(Time.deltaTime);
+        }
+
+        // Finde die höchste Priorität
+        int currentHighestPriority = activeGravityFields.Max(field => field.Priority);
+
+        // Überprüfe, ob sich die Priorität geändert hat
+        if (currentHighestPriority != lastAppliedPriority)
+        {
+            lastAppliedPriority = currentHighestPriority;
+
+            // Setze den Delay für alle Felder mit der neuen höchsten Priorität zurück
+            foreach (var field in activeGravityFields)
+            {
+                if (field.Priority == currentHighestPriority)
+                {
+                    field.ResetDelay();
+                }
+            }
+        }
+
         // Finde die höchste Priorität und filtere die relevanten Felder
         var highestPriorityFields = GetHighestPriorityFields();
 
         foreach (var gravityField in highestPriorityFields)
         {
+            // Ignoriere Felder mit aktiver Verzögerung
+            if (gravityField.IsDelayActive)
+            {
+                continue;
+            }
+
             totalGravity += CalculateFieldGravity(gravityField);
         }
         gravityDirection = totalGravity.normalized;
@@ -65,7 +93,6 @@ public class GravityControllerForMultipleFields : MonoBehaviour
     {
         Vector3 fieldGravityDirection = gravityField.CalculateGravityDirection(rb.position);
         float distance = Vector3.Distance(rb.position, gravityField.transform.position);
-        //float colliderRadius = gravityField.GetComponent<Collider>().bounds.extents.magnitude;
         float colliderRadius = gravityField.GravityFieldRadius;
         float fieldGravityStrength;
 
@@ -89,15 +116,6 @@ public class GravityControllerForMultipleFields : MonoBehaviour
 
     private float CalculateGravityForce(GravityField gravityField, float distance)
     {
-        // Das Gravitationsgesetz:
-        // F = G * (m1 * m2) / r^2
-        // F: Gravitationskraft
-        // G: Gravitationskonstante (hier als gravityField.GetGravityStregth() verwendet)
-        // m1: Masse des ersten Objekts (hier rb.mass)
-        // m2: Masse des zweiten Objekts (hier gravityField.GetGravityFieldMass())
-        // r: Abstand zwischen den Mittelpunkten der beiden Objekte (hier distance)
-        // Die Gravitationskraft nimmt mit dem Quadrat der Entfernung ab (r^2).
-
         return gravityField.GravityStrength
             * (rb.mass * gravityField.GravityFieldMass)
             / (distance * distance);
@@ -136,10 +154,10 @@ public class GravityControllerForMultipleFields : MonoBehaviour
 
     private void OnTriggerStay(Collider other)
     {
-        //OnTriggerEnter reagiert nicht auf Triggerevents, wenn der Collider sich bereits im Triggerbereich befindet
         if (!groundDetection.IsGrounded && other.CompareTag("GravityField"))
         {
-            AddGravityField(other.GetComponent<GravityField>());
+            GravityField gravityField = other.GetComponent<GravityField>();
+            AddGravityField(gravityField);
             CheckGravityFieldDistances();
         }
     }
@@ -157,6 +175,7 @@ public class GravityControllerForMultipleFields : MonoBehaviour
     {
         if (!activeGravityFields.Contains(newGravityField))
         {
+            newGravityField.ResetDelay(); // Verzögerung starten
             activeGravityFields.Add(newGravityField);
         }
     }
@@ -188,6 +207,7 @@ public class GravityControllerForMultipleFields : MonoBehaviour
         if (closestField != null)
         {
             activeGravityFields.Clear();
+            closestField.ResetDelay(); // Verzögerung aktivieren
             activeGravityFields.Add(closestField);
         }
     }
