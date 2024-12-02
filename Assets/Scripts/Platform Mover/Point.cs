@@ -2,8 +2,11 @@ using UnityEngine;
 
 public class Point : MonoBehaviour
 {
-    public float waitTime = 0f; // Zeit, die das Objekt an diesem Punkt verweilt
+    [Tooltip("Zeit, die an diesem Punkt gewartet wird.")]
+    public float waitTime = 0f;
 
+    [Tooltip("Optionales Zielobjekt, das sich an diesem Punkt drehen soll.")]
+    public Transform targetObject;
 }
 
 

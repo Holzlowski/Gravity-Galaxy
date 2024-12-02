@@ -258,16 +258,17 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: f4a38d102e5150f428fc261dcab95945, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  gravityFieldType: 1
+  gravityFieldType: 2
   gravityStrength: 9.81
   gravityFieldMass: 10
   priority: 1
-  simpleCollider: {fileID: 0}
+  simpleCollider: {fileID: 1473576736}
   meshCollider: {fileID: 0}
   thresholdDistance: 0.1
   neighborThresholdDistance: 0.1
   smoothingFactor: 10
   gravityDelay: 0
+  gravityDirectionType: 0
 --- !u!65 &22544884
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -352,6 +353,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   waitTime: 3
+  targetObject: {fileID: 0}
 --- !u!23 &42478857
 MeshRenderer:
   m_ObjectHideFlags: 0
@@ -588,7 +590,6 @@ MonoBehaviour:
   speed: 2
   rotationSpeed: 10
   baseJumpForce: 10
-  lastMovementDirection: {x: 0, y: 0, z: 0}
   maxJumpCount: 1
   jumpCooldown: 0
 --- !u!54 &136399294
@@ -683,6 +684,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   waitTime: 2
+  targetObject: {fileID: 0}
 --- !u!23 &287067334
 MeshRenderer:
   m_ObjectHideFlags: 0
@@ -1103,13 +1105,13 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 547476401}
   serializedVersion: 2
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalRotation: {x: -0, y: -0, z: -0.70710707, w: 0.70710653}
   m_LocalPosition: {x: -10.88, y: 0, z: -12.37}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 673674258}
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: -90}
 --- !u!114 &547476403
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1123,6 +1125,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   waitTime: 0
+  targetObject: {fileID: 0}
 --- !u!23 &547476405
 MeshRenderer:
   m_ObjectHideFlags: 0
@@ -1250,6 +1253,7 @@ MonoBehaviour:
   neighborThresholdDistance: 0.1
   smoothingFactor: 10
   gravityDelay: 0
+  gravityDirectionType: 0
 --- !u!1 &673674256
 GameObject:
   m_ObjectHideFlags: 0
@@ -1340,6 +1344,7 @@ MonoBehaviour:
   neighborThresholdDistance: 0.1
   smoothingFactor: 10
   gravityDelay: 0
+  gravityDirectionType: 0
 --- !u!135 &716822154
 SphereCollider:
   m_ObjectHideFlags: 0
@@ -1458,7 +1463,6 @@ MonoBehaviour:
   speed: 2
   rotationSpeed: 10
   baseJumpForce: 10
-  lastMovementDirection: {x: 0, y: 0, z: 0}
   maxJumpCount: 1
   jumpCooldown: 0
 --- !u!54 &769821160
@@ -1762,6 +1766,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   waitTime: 0
+  targetObject: {fileID: 0}
 --- !u!23 &909208352
 MeshRenderer:
   m_ObjectHideFlags: 0
@@ -2362,6 +2367,7 @@ MonoBehaviour:
   neighborThresholdDistance: 0.1
   smoothingFactor: 10
   gravityDelay: 0
+  gravityDirectionType: 0
 --- !u!135 &1464865946
 SphereCollider:
   m_ObjectHideFlags: 0

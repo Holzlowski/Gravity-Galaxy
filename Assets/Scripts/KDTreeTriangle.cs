@@ -86,22 +86,6 @@ public class KDTreeTriangle
         return false;
     }
 
-    // private bool AreTrianglesNeighbors(Vector3[] triangle1, Vector3[] triangle2)
-    // {
-    //     int sharedVertices = 0;
-    //     foreach (var vertex1 in triangle1)
-    //     {
-    //         foreach (var vertex2 in triangle2)
-    //         {
-    //             if (vertex1 == vertex2)
-    //             {
-    //                 sharedVertices++;
-    //             }
-    //         }
-    //     }
-    //     return sharedVertices >= 2;
-    // }
-
     public Triangle FindNearestTriangleNode(Vector3 target)
     {
         return FindNearestTriangle(root, target, 0);

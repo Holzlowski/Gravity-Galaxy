@@ -1,7 +1,5 @@
-using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
-using Unity.VisualScripting;
 using UnityEngine;
 
 public class GravityField : MonoBehaviour
@@ -45,6 +43,10 @@ public class GravityField : MonoBehaviour
     private float delayTimer = 0f;
 
     public bool IsDelayActive => delayTimer > 0f;
+
+    [Header("Directional Gravity Settings")]
+    [SerializeField] private GravityDirection gravityDirectionType = GravityDirection.Down;
+
 
 
 
@@ -113,8 +115,10 @@ public class GravityField : MonoBehaviour
         {
             case GravityFieldType.Centerpoint:
                 return (transform.position - playerPosition).normalized * gravityStrength;
-            case GravityFieldType.Down:
-                return transform.up * -1;
+            case GravityFieldType.TransformOneDirection:
+                return transform.up * -1 * gravityStrength;
+            case GravityFieldType.OneDirection:
+                return GetDirectionalGravity() * gravityStrength;
             case GravityFieldType.CenterpointInverse:
                 return (playerPosition - transform.position).normalized * gravityStrength;
             case GravityFieldType.SimpleMesh:
@@ -127,6 +131,27 @@ public class GravityField : MonoBehaviour
                 return (transform.position - playerPosition).normalized;
         }
     }
+
+    private Vector3 GetDirectionalGravity()
+    {
+        switch (gravityDirectionType)
+        {
+            case GravityDirection.Up:
+                return Vector3.up;
+            case GravityDirection.Left:
+                return Vector3.left;
+            case GravityDirection.Right:
+                return Vector3.right;
+            case GravityDirection.Forward:
+                return Vector3.forward;
+            case GravityDirection.Backward:
+                return Vector3.back;
+            case GravityDirection.Down:
+            default:
+                return Vector3.down;
+        }
+    }
+
     private Vector3 LogErrorAndReturnZero(string message)
     {
         Debug.LogError(message);
@@ -321,7 +346,8 @@ public class GravityField : MonoBehaviour
 public enum GravityFieldType
 {
     Centerpoint,
-    Down,
+    TransformOneDirection,
+    OneDirection,
     CenterpointInverse,
     SimpleMesh,
     LowPolyMeshKDTree,
@@ -329,6 +355,15 @@ public enum GravityFieldType
     CalculateInterpolatedGravityWithNeighbors
 }
 
+public enum GravityDirection
+{
+    Down,
+    Up,
+    Left,
+    Right,
+    Forward,
+    Backward
+}
 
 //DER CODE HAT FUNKTIONIERT, ABER ES GAB PROBLEME MIT DER INTERPOLATION
 //Definiere eine Schwellenentfernung für die Interpolation

@@ -2,90 +2,130 @@ using UnityEngine;
 
 public class Mover : MonoBehaviour
 {
+    [Header("Movement Settings")]
     public PointNetwork pointNetwork;
-    public float speed = 5f; // Geschwindigkeit der Bewegung
-    public float rotationSpeed = 3f; // Geschwindigkeit der Drehung
-    public bool resetToStart = false; // Ob das Objekt nach Erreichen des letzten Punktes zum Anfang zurückkehren soll
+    public float speed = 5f;
+    public float rotationSpeed = 3f;
+    public bool resetToStart = false;
+
+    [Header("State")]
     private int currentPointIndex = 0;
     private bool isMoving = false;
     private float waitTimeRemaining = 0f;
 
-    private Vector3 lastPosition; // Letzte Position der Plattform
-    private Quaternion lastRotation; // Letzte Rotation der Plattform
-    private GameObject player; // Referenz zum Spieler
+    [Header("Player Interaction")]
+    private GameObject player;
+    private Vector3 lastPosition;
+    private Quaternion lastRotation;
 
     void Start()
     {
-        lastPosition = transform.position;
-        lastRotation = transform.rotation;
-        if (pointNetwork != null && pointNetwork.points.Count > 0)
-        {
-            transform.position = pointNetwork.points[0].transform.position;
-        }
+        InitializePlatform();
     }
 
     void Update()
     {
-        if (pointNetwork == null || pointNetwork.points.Count == 0)
-        {
-            return; // Abbruch, wenn kein Punktnetz vorhanden ist
-        }
-
-        // Überprüfung der verbleibenden Wartezeit
-        if (waitTimeRemaining > 0)
-        {
-            waitTimeRemaining -= Time.deltaTime;
-
-            // Bewegung starten, wenn die Wartezeit abgelaufen ist
-            if (waitTimeRemaining <= 0)
-            {
-                isMoving = true;
-            }
-            return; // Abbruch, wenn noch gewartet wird
-        }
-
-        if (!isMoving)
-        {
-            Point currentPoint = pointNetwork.points[currentPointIndex];
-
-            // Überprüfung, ob der aktuelle Punkt eine Wartezeit hat
-            if (currentPoint.waitTime > 0)
-            {
-                waitTimeRemaining = currentPoint.waitTime;
-                return; // Abbruch, wenn gewartet werden muss
-            }
-
-            // Bewegung starten, falls keine Wartezeit vorhanden ist
-            isMoving = true;
-        }
-
-        Point targetPoint = pointNetwork.points[(currentPointIndex + 1) % pointNetwork.points.Count];
-        MoveToPoint(targetPoint);
+        HandleMovementLogic();
     }
 
     private void FixedUpdate()
     {
-        // Synchronisation des Spielers, wenn sich dieser auf der Plattform befindet
-        if (player != null)
+        SyncPlayerMovement();
+    }
+
+    private void InitializePlatform()
+    {
+        if (pointNetwork != null && pointNetwork.points.Count > 0)
         {
-            Rigidbody playerRb = player.GetComponent<Rigidbody>();
-
-            // Berechnung der Plattformbewegung
-            Vector3 platformMovement = transform.position - lastPosition;
-
-            // Anwendung der Plattformbewegung auf den Spieler
-            playerRb.MovePosition(playerRb.position + platformMovement);
-
-            // Optionale Anwendung der Plattformrotation auf den Spieler
-            Quaternion platformRotationDelta = transform.rotation * Quaternion.Inverse(lastRotation);
-            Vector3 playerOffset = playerRb.position - transform.position;
-            Vector3 rotatedOffset = platformRotationDelta * playerOffset;
-            Vector3 movementDueToRotation = rotatedOffset - playerOffset;
-            playerRb.MovePosition(playerRb.position + movementDueToRotation);
-
-            // Drehung des Spielers entsprechend der Plattform
-            playerRb.MoveRotation(Quaternion.Slerp(playerRb.rotation, transform.rotation, Time.deltaTime * speed));
+            transform.position = pointNetwork.points[0].transform.position;
         }
+
+        lastPosition = transform.position;
+        lastRotation = transform.rotation;
+    }
+
+    private void HandleMovementLogic()
+    {
+        if (IsPointNetworkInvalid())
+        {
+            return;
+        }
+
+        UpdateWaitTime();
+
+        if (waitTimeRemaining > 0)
+        {
+            return;
+        }
+
+        if (!isMoving)
+        {
+            HandleCurrentPointWaitTime();
+        }
+
+        MoveToNextPoint();
+    }
+
+    private bool IsPointNetworkInvalid()
+    {
+        return pointNetwork == null || pointNetwork.points.Count == 0;
+    }
+
+    private void UpdateWaitTime()
+    {
+        if (waitTimeRemaining > 0)
+        {
+            waitTimeRemaining -= Time.deltaTime;
+
+            if (waitTimeRemaining <= 0)
+            {
+                isMoving = true;
+            }
+        }
+    }
+
+    private void HandleCurrentPointWaitTime()
+    {
+        Point currentPoint = pointNetwork.points[currentPointIndex];
+
+        if (currentPoint.waitTime > 0)
+        {
+            waitTimeRemaining = currentPoint.waitTime;
+        }
+        else
+        {
+            isMoving = true;
+        }
+    }
+
+    private void MoveToNextPoint()
+    {
+        Point targetPoint = pointNetwork.points[GetNextPointIndex()];
+        MoveToPoint(targetPoint);
+    }
+
+    private void SyncPlayerMovement()
+    {
+        if (player == null)
+        {
+            return;
+        }
+
+        Rigidbody playerRb = player.GetComponent<Rigidbody>();
+        if (playerRb == null)
+        {
+            return;
+        }
+
+        Vector3 platformMovement = transform.position - lastPosition;
+        Quaternion platformRotationDelta = transform.rotation * Quaternion.Inverse(lastRotation);
+
+        Vector3 playerOffset = playerRb.position - transform.position;
+        Vector3 rotatedOffset = platformRotationDelta * playerOffset;
+        Vector3 movementDueToRotation = rotatedOffset - playerOffset;
+
+        playerRb.MovePosition(playerRb.position + platformMovement + movementDueToRotation);
+        playerRb.MoveRotation(Quaternion.Slerp(playerRb.rotation, transform.rotation, Time.fixedDeltaTime * rotationSpeed));
 
         lastPosition = transform.position;
         lastRotation = transform.rotation;
@@ -97,23 +137,15 @@ public class Mover : MonoBehaviour
         float distance = Vector3.Distance(transform.position, targetPoint.transform.position);
         float moveDistance = speed * Time.deltaTime;
 
-        // Bewegung der Plattform in Richtung des Zielpunkts
         if (moveDistance >= distance)
         {
             transform.position = targetPoint.transform.position;
             isMoving = false;
-            currentPointIndex = (currentPointIndex + 1) % pointNetwork.points.Count;
+            currentPointIndex = GetNextPointIndex();
 
             if (!pointNetwork.loop && currentPointIndex == 0)
             {
-                if (resetToStart)
-                {
-                    currentPointIndex = 0; // Zurück zum Anfang
-                }
-                else
-                {
-                    enabled = false; // Bewegung beenden, wenn kein Loop vorhanden ist und das Ende erreicht ist
-                }
+                HandleEndOfPath();
             }
         }
         else
@@ -121,24 +153,39 @@ public class Mover : MonoBehaviour
             transform.position += direction * moveDistance;
         }
 
-        // Drehung der Plattform zur Zielausrichtung
         RotateToTargetPoint(targetPoint);
+    }
+
+    private void HandleEndOfPath()
+    {
+        if (resetToStart)
+        {
+            currentPointIndex = 0;
+        }
+        else
+        {
+            enabled = false;
+        }
     }
 
     private void RotateToTargetPoint(Point targetPoint)
     {
-        // Berechnung der Zielrotation
+        Transform rotationTarget = targetPoint.targetObject != null ? targetPoint.targetObject : transform;
         Quaternion targetRotation = targetPoint.transform.rotation;
 
-        // Drehung der Plattform zur Zielrotation mit der angegebenen Drehgeschwindigkeit
-        transform.rotation = Quaternion.Slerp(transform.rotation, targetRotation, Time.deltaTime * rotationSpeed);
+        rotationTarget.rotation = Quaternion.Slerp(rotationTarget.rotation, targetRotation, Time.deltaTime * rotationSpeed);
+    }
+
+    private int GetNextPointIndex()
+    {
+        return (currentPointIndex + 1) % pointNetwork.points.Count;
     }
 
     private void OnTriggerEnter(Collider other)
     {
         if (other.CompareTag("Player"))
         {
-            player = other.gameObject; // Referenz zum Spieler speichern
+            player = other.gameObject;
         }
     }
 
@@ -146,7 +193,7 @@ public class Mover : MonoBehaviour
     {
         if (other.CompareTag("Player"))
         {
-            player = null; // Referenz zum Spieler zurücksetzen
+            player = null;
         }
     }
 }

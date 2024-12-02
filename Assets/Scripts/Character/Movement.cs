@@ -7,28 +7,26 @@ public class Movement : MonoBehaviour
 {
     private Rigidbody rb;
 
+    [Header("Movement Settings")]
     [SerializeField]
     private float speed = 10f;
 
     [SerializeField]
     private float rotationSpeed = 10f;
 
+    [Header("Jump Settings")]
     [SerializeField]
     private float baseJumpForce = 10f;
 
     [SerializeField]
-    private Vector3 lastMovementDirection;
-
-    //private float currentGravityStrength = 9.81f;
-
-    private int jumpCount = 0;
-
-    [SerializeField]
     private int maxJumpCount = 2;
-    private float lastJumpTime = 0;
 
     [SerializeField]
     private float jumpCooldown = 0.5f;
+
+    private Vector3 lastMovementDirection;
+    private int jumpCount = 0;
+    private float lastJumpTime = 0;
 
     void Awake()
     {
@@ -47,7 +45,7 @@ public class Movement : MonoBehaviour
         if (movementDirection.magnitude >= 0.1f)
         {
             lastMovementDirection = movementDirection; // Letzte Bewegungsrichtung speichern
-            RotateTowardsMoveDirection(characterObject, gravityDirection, movementDirection);
+            RotateTowardsMoveDirection(characterObject, movementDirection);
             rb.MovePosition(rb.position + movementDirection * speed * Time.deltaTime);
         }
         else if (lastMovementDirection != Vector3.zero)
@@ -97,7 +95,6 @@ public class Movement : MonoBehaviour
 
     private void RotateTowardsMoveDirection(
         Transform characterObject,
-        Vector3 gravityDirection,
         Vector3 movementDirection
     )
     {

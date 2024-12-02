@@ -37,6 +37,12 @@ public class GravityFieldDrawer : Editor
             EditorGUILayout.PropertyField(meshColliderProp, new GUIContent("Collider"));
         }
 
+        if ((GravityFieldType)gravityFieldTypeProp.enumValueIndex == GravityFieldType.OneDirection)
+        {
+            SerializedProperty gravityDirectionType = serializedObject.FindProperty("gravityDirectionType");
+            EditorGUILayout.PropertyField(gravityDirectionType, new GUIContent("Gravity Direction Type"));
+        }
+
 
         if ((GravityFieldType)gravityFieldTypeProp.enumValueIndex == GravityFieldType.LowPolyMeshKDTree)
         {

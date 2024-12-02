@@ -1,7 +1,5 @@
-using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
-using Unity.VisualScripting;
 using UnityEngine;
 
 public class GravityControllerForMultipleFields : MonoBehaviour
@@ -24,11 +22,6 @@ public class GravityControllerForMultipleFields : MonoBehaviour
     {
         rb = GetComponent<Rigidbody>();
         groundDetection = GetComponent<GroundDetection>();
-    }
-
-    void Update()
-    {
-        //RotateAroundTheSun();
     }
 
     public Vector3 GetGravityDirection()
@@ -96,7 +89,7 @@ public class GravityControllerForMultipleFields : MonoBehaviour
         float colliderRadius = gravityField.GravityFieldRadius;
         float fieldGravityStrength;
 
-        if (gravityField.GravityFieldType == GravityFieldType.Down)
+        if (gravityField.GravityFieldType == GravityFieldType.TransformOneDirection)
         {
             fieldGravityStrength = gravityField.GravityStrength;
         }
