@@ -163,6 +163,7 @@ MonoBehaviour:
   neighborThresholdDistance: 0.1
   smoothingFactor: 10
   gravityDelay: 0
+  gravityDirectionType: 0
 --- !u!65 &22544884
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -422,6 +423,16 @@ PrefabInstance:
         type: 3}
       propertyPath: gravityDelay
       value: 2
+      objectReference: {fileID: 0}
+    - target: {fileID: 299452601642577651, guid: f1197a62d60c6b64e957713b44f467ef,
+        type: 3}
+      propertyPath: meshCollider
+      value: 
+      objectReference: {fileID: 0}
+    - target: {fileID: 299452601642577651, guid: f1197a62d60c6b64e957713b44f467ef,
+        type: 3}
+      propertyPath: gravityFieldType
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 5372299230635835626, guid: f1197a62d60c6b64e957713b44f467ef,
         type: 3}
@@ -1603,6 +1614,11 @@ PrefabInstance:
       propertyPath: m_Name
       value: Inner GF
       objectReference: {fileID: 0}
+    - target: {fileID: 5403087300142070010, guid: f1197a62d60c6b64e957713b44f467ef,
+        type: 3}
+      propertyPath: m_IsActive
+      value: 0
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
@@ -1779,7 +1795,6 @@ MonoBehaviour:
   speed: 10
   rotationSpeed: 10
   baseJumpForce: 5
-  lastMovementDirection: {x: 0, y: 0, z: 0}
   maxJumpCount: 2
   jumpCooldown: 5
 --- !u!114 &1294120420

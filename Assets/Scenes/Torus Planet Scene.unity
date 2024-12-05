@@ -154,14 +154,16 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   gravityFieldType: 1
-  simpleCollider: {fileID: 0}
-  meshCollider: {fileID: 0}
   gravityStrength: 9.81
   gravityFieldMass: 10
   priority: 1
+  simpleCollider: {fileID: 0}
+  meshCollider: {fileID: 0}
   thresholdDistance: 0.1
   neighborThresholdDistance: 0.1
   smoothingFactor: 5
+  gravityDelay: 0
+  gravityDirectionType: 0
 --- !u!65 &22544884
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -328,15 +330,17 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: f4a38d102e5150f428fc261dcab95945, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  gravityFieldType: 4
-  simpleCollider: {fileID: 0}
-  meshCollider: {fileID: 2048377602}
+  gravityFieldType: 5
   gravityStrength: 9.81
   gravityFieldMass: 10
   priority: 1
-  thresholdDistance: 0.2
-  neighborThresholdDistance: 0.5
+  simpleCollider: {fileID: 0}
+  meshCollider: {fileID: 2048377602}
+  thresholdDistance: 2
+  neighborThresholdDistance: 0.3
   smoothingFactor: 5
+  gravityDelay: 0
+  gravityDirectionType: 0
 --- !u!4 &138769708
 Transform:
   m_ObjectHideFlags: 0
@@ -1183,7 +1187,7 @@ PrefabInstance:
     - target: {fileID: 611359743151083824, guid: 666f70ea217188349b4ff55f712cd659,
         type: 3}
       propertyPath: gravityFieldType
-      value: 5
+      value: 6
       objectReference: {fileID: 0}
     - target: {fileID: 3706011488146985276, guid: 666f70ea217188349b4ff55f712cd659,
         type: 3}
@@ -1457,7 +1461,6 @@ MonoBehaviour:
   speed: 5
   rotationSpeed: 10
   baseJumpForce: 5
-  lastMovementDirection: {x: 0, y: 0, z: 0}
   maxJumpCount: 2
   jumpCooldown: 5
 --- !u!114 &1294120420
