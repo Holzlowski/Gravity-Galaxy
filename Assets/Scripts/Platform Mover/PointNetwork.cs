@@ -20,28 +20,28 @@ public class PointNetwork : MonoBehaviour
         }
     }
 
-    void OnDrawGizmos()
-    {
-        if (points.Count > 1)
-        {
-            for (int i = 0; i < points.Count - 1; i++)
-            {
-                DrawConnection(points[i], points[i + 1]);
-            }
+    // void OnDrawGizmos()
+    // {
+    //     if (points.Count > 1)
+    //     {
+    //         for (int i = 0; i < points.Count - 1; i++)
+    //         {
+    //             DrawConnection(points[i], points[i + 1]);
+    //         }
 
-            if (loop)
-            {
-                DrawConnection(points[points.Count - 1], points[0]);
-            }
-        }
-    }
+    //         if (loop)
+    //         {
+    //             DrawConnection(points[points.Count - 1], points[0]);
+    //         }
+    //     }
+    // }
 
-    void DrawConnection(Point a, Point b)
-    {
+    // void DrawConnection(Point a, Point b)
+    // {
 
-        // Zeichne eine gerade Linie zwischen den Punkten
-        Gizmos.color = Color.green;
-        Gizmos.DrawLine(a.transform.position, b.transform.position);
+    //     // Zeichne eine gerade Linie zwischen den Punkten
+    //     Gizmos.color = Color.green;
+    //     Gizmos.DrawLine(a.transform.position, b.transform.position);
 
-    }
+    // }
 }

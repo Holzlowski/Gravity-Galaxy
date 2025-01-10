@@ -154,11 +154,16 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   gravityFieldType: 1
-  simpleCollider: {fileID: 0}
-  meshCollider: {fileID: 0}
   gravityStrength: 9.81
   gravityFieldMass: 10
   priority: 1
+  gravityDelay: 0
+  simpleCollider: {fileID: 0}
+  meshCollider: {fileID: 0}
+  thresholdDistance: 0.1
+  neighborThresholdDistance: 0.1
+  smoothingFactor: 10
+  gravityDirectionType: 0
 --- !u!65 &22544884
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -518,11 +523,16 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   gravityFieldType: 0
-  simpleCollider: {fileID: 0}
-  meshCollider: {fileID: 0}
   gravityStrength: 9.81
   gravityFieldMass: 10
   priority: 0
+  gravityDelay: 0
+  simpleCollider: {fileID: 0}
+  meshCollider: {fileID: 0}
+  thresholdDistance: 0.1
+  neighborThresholdDistance: 0.1
+  smoothingFactor: 10
+  gravityDirectionType: 0
 --- !u!1 &495928492
 GameObject:
   m_ObjectHideFlags: 0
@@ -604,12 +614,17 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: f4a38d102e5150f428fc261dcab95945, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  gravityFieldType: 3
-  simpleCollider: {fileID: 1674921271}
-  meshCollider: {fileID: 0}
+  gravityFieldType: 4
   gravityStrength: 9.81
   gravityFieldMass: 10
   priority: 0
+  gravityDelay: 0
+  simpleCollider: {fileID: 1674921271}
+  meshCollider: {fileID: 0}
+  thresholdDistance: 0.1
+  neighborThresholdDistance: 0.1
+  smoothingFactor: 10
+  gravityDirectionType: 0
 --- !u!136 &522061750
 CapsuleCollider:
   m_ObjectHideFlags: 0
@@ -667,7 +682,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!136 &540419875
 CapsuleCollider:
   m_ObjectHideFlags: 0
@@ -1211,7 +1226,7 @@ Transform:
   m_GameObject: {fileID: 1294120412}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -1, w: 0.0000008493661}
-  m_LocalPosition: {x: -1.5700003, y: 3.72, z: -10.69}
+  m_LocalPosition: {x: -2.93, y: 1.52, z: -6.48}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
@@ -1258,7 +1273,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: eba579d1b69a5fc428df06e7ad7e8708, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  playerObject: {fileID: 1574030190}
+  playerCharacter: {fileID: 1574030190}
   cameraTransform: {fileID: 330585546}
   isGrounded: 0
 --- !u!136 &1294120416
@@ -1316,8 +1331,8 @@ MonoBehaviour:
   speed: 10
   rotationSpeed: 10
   baseJumpForce: 15
-  lastMovementDirection: {x: 0, y: 0, z: 0}
-  maxJumpCount: 2
+  additionalJumpForce: 0.5
+  maxAdditionalHigherJumps: 2
   jumpCooldown: 5
 --- !u!114 &1294120420
 MonoBehaviour:
@@ -1415,11 +1430,16 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   gravityFieldType: 0
-  simpleCollider: {fileID: 0}
-  meshCollider: {fileID: 0}
   gravityStrength: 9.81
   gravityFieldMass: 10
   priority: 0
+  gravityDelay: 0
+  simpleCollider: {fileID: 0}
+  meshCollider: {fileID: 0}
+  thresholdDistance: 0.1
+  neighborThresholdDistance: 0.1
+  smoothingFactor: 10
+  gravityDirectionType: 0
 --- !u!1001 &1432681128
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -1532,7 +1552,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!4 &1473576735
 Transform:
   m_ObjectHideFlags: 0
@@ -1877,11 +1897,16 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   gravityFieldType: 0
-  simpleCollider: {fileID: 0}
-  meshCollider: {fileID: 0}
   gravityStrength: 9.81
   gravityFieldMass: 10
   priority: 1
+  gravityDelay: 0
+  simpleCollider: {fileID: 0}
+  meshCollider: {fileID: 0}
+  thresholdDistance: 0.1
+  neighborThresholdDistance: 0.1
+  smoothingFactor: 10
+  gravityDirectionType: 0
 --- !u!1 &1755869130
 GameObject:
   m_ObjectHideFlags: 0
@@ -2083,11 +2108,16 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   gravityFieldType: 0
-  simpleCollider: {fileID: 0}
-  meshCollider: {fileID: 0}
   gravityStrength: 9.81
   gravityFieldMass: 10
   priority: 1
+  gravityDelay: 0
+  simpleCollider: {fileID: 0}
+  meshCollider: {fileID: 0}
+  thresholdDistance: 0.1
+  neighborThresholdDistance: 0.1
+  smoothingFactor: 10
+  gravityDirectionType: 0
 --- !u!65 &1796647369
 BoxCollider:
   m_ObjectHideFlags: 0

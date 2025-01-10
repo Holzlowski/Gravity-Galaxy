@@ -4,12 +4,14 @@ using UnityEngine;
 
 public class GravityField : MonoBehaviour
 {
-    [Header("Gravity Field Settings")]
     [SerializeField] private GravityFieldType gravityFieldType;
     [SerializeField] private float gravityStrength = 9.81f;
     [SerializeField] private float gravityFieldMass = 10f;
     [SerializeField] private int priority = 0;
     private float gravityFieldRadius;
+    [SerializeField] float gravityDelay = 0f; // Verzögerung in Sekunden
+    private float delayTimer = 0f;
+    public bool IsDelayActive => delayTimer > 0f;
 
     [Header("Colliders")]
     [SerializeField] private Collider simpleCollider;
@@ -23,8 +25,8 @@ public class GravityField : MonoBehaviour
     private List<Vector3[]> triangleList;
 
     [Header("Current Triangle Data")]
-    private Triangle currentClosestTriangle;
-    private Vector3 currentTriangleCenter;
+    // private Triangle currentClosestTriangle;
+    // private Vector3 currentTriangleCenter;
     private HashSet<Triangle> currentNeighbors = new HashSet<Triangle>();
 
     [Header("Distance Thresholds")]
@@ -38,20 +40,18 @@ public class GravityField : MonoBehaviour
     [Header("Smoothing Settings")]
     [SerializeField] private float smoothingFactor = 10f;
 
-    [Header("Gravity Delay")]
-    public float gravityDelay = 0f; // Verzögerung in Sekunden
-    private float delayTimer = 0f;
 
-    public bool IsDelayActive => delayTimer > 0f;
 
     [Header("Directional Gravity Settings")]
     [SerializeField] private GravityDirection gravityDirectionType = GravityDirection.Down;
 
 
 
-
     void Awake()
     {
+
+        Physics.gravity = new Vector3(0, -15.0f, 0); // Erhöhte Gravitationskraft
+
         gravityFieldCollider = GetComponent<Collider>();
         gravityFieldRadius = gravityFieldCollider.bounds.extents.magnitude;
 
@@ -109,22 +109,22 @@ public class GravityField : MonoBehaviour
             delayTimer -= deltaTime;
         }
     }
-    public Vector3 CalculateGravityDirection(Vector3 playerPosition)
+    public Vector3 CalculateGravityDirection(Vector3 playerPosition, GravityState gravityState)
     {
         switch (gravityFieldType)
         {
             case GravityFieldType.Centerpoint:
-                return (transform.position - playerPosition).normalized * gravityStrength;
+                return (transform.position - playerPosition).normalized;
             case GravityFieldType.TransformOneDirection:
-                return transform.up * -1 * gravityStrength;
+                return GetTransformDirectionalGravity();
             case GravityFieldType.OneDirection:
-                return GetDirectionalGravity() * gravityStrength;
+                return GetDirectionalGravity();
             case GravityFieldType.CenterpointInverse:
-                return (playerPosition - transform.position).normalized * gravityStrength;
+                return (playerPosition - transform.position).normalized;
             case GravityFieldType.SimpleMesh:
                 return simpleCollider != null ? CalculateSimpleMeshBasedGravity(playerPosition) : LogErrorAndReturnZero("SimpleCollider is not set for SimpleMeshBased gravity field");
             case GravityFieldType.LowPolyMeshKDTree:
-                return meshCollider != null ? GetInterpolatedGravityDirectionFromLowPolyMesh(playerPosition) : LogErrorAndReturnZero("MeshCollider is not set for MeshBasedKDTree gravity field");
+                return meshCollider != null ? GetInterpolatedGravityDirectionFromLowPolyMesh(playerPosition, gravityState) : LogErrorAndReturnZero("MeshCollider is not set for MeshBasedKDTree gravity field");
             case GravityFieldType.HighPolyMeshKDTree:
                 return meshCollider != null ? CalculateMeshBasedGravityHighPoly(playerPosition) : LogErrorAndReturnZero("MeshCollider is not set for MeshBasedKDTree gravity field");
             default:
@@ -152,6 +152,27 @@ public class GravityField : MonoBehaviour
         }
     }
 
+    private Vector3 GetTransformDirectionalGravity()
+    {
+        switch (gravityDirectionType)
+        {
+            case GravityDirection.Up:
+                return transform.up;
+            case GravityDirection.Down:
+                return -transform.up;
+            case GravityDirection.Left:
+                return -transform.right;
+            case GravityDirection.Right:
+                return transform.right;
+            case GravityDirection.Forward:
+                return transform.forward;
+            case GravityDirection.Backward:
+                return -transform.forward;
+            default:
+                return -transform.up;
+        }
+    }
+
     private Vector3 LogErrorAndReturnZero(string message)
     {
         Debug.LogError(message);
@@ -161,88 +182,75 @@ public class GravityField : MonoBehaviour
     private Vector3 CalculateSimpleMeshBasedGravity(Vector3 playerPosition)
     {
         Vector3 closestPoint = simpleCollider.ClosestPoint(playerPosition);
-        //Debug.Log("ClosestPoint ist: " + closestPoint);
-        return (closestPoint - playerPosition).normalized * gravityStrength;
+        return (closestPoint - playerPosition).normalized;
     }
 
 
-    private Vector3 GetInterpolatedGravityDirectionFromLowPolyMesh(Vector3 playerPosition)
+    private Vector3 GetInterpolatedGravityDirectionFromLowPolyMesh(Vector3 playerPosition, GravityState state)
     {
-        // Überprüfung, ob der Spieler eine bestimmte Distanz vom Mittelpunkt des aktuellen Dreiecks überschreitet
-        bool needsUpdate = currentClosestTriangle == null ||
-                           Vector3.Distance(playerPosition, currentTriangleCenter) > thresholdDistance;
+        // Find closest triangle
+        Triangle newClosestTriangle = kdTree.FindNearestTriangleNode(playerPosition);
 
-        if (!needsUpdate && currentClosestTriangle != null)
-        {
-            needsUpdate = currentClosestTriangle.neighbors.Any(neighbor =>
-                Vector3.Distance(playerPosition, neighbor.GetCenter()) < neighborThresholdDistance);
-        }
-
-        if (needsUpdate)
-        {
-            currentClosestTriangle = kdTree.FindNearestTriangleNode(playerPosition);
-            if (currentClosestTriangle != null)
-            {
-                currentTriangleCenter = currentClosestTriangle.GetCenter();
-            }
-        }
-
-        // Update der Nachbarn, bevor die Berechnungen fortfährt
-        UpdateNeighbors();
-
-        if (currentClosestTriangle != null)
-        {
-            Vector3 interpolatedGravity = Vector3.zero;
-            float totalWeight = 0.0f;
-
-            foreach (var neighbor in currentNeighbors)
-            {
-                Vector3 neighborCenter = neighbor.GetCenter();
-                Vector3 normal = neighbor.normal;
-
-                float distance = Vector3.Distance(playerPosition, neighborCenter);
-                float weight = 1f / (distance + 0.001f); // Direkte Gewichtung
-
-                interpolatedGravity += normal * weight;
-                totalWeight += weight;
-            }
-
-            // Normale interpolieren und Richtung berechnen
-            if (totalWeight > 0)
-            {
-                interpolatedGravity /= totalWeight;
-            }
-            else
-            {
-                Debug.LogWarning("Total weight is zero, fallback to current triangle normal");
-                interpolatedGravity = currentClosestTriangle.normal;
-            }
-
-            // Entgegengesetzte Richtung für die Schwerkraft
-            Vector3 targetGravityDirection = -interpolatedGravity.normalized * gravityStrength;
-
-            // Initialisierung von previousGravityDirection nur einmal
-            if (previousGravityDirection == Vector3.zero)
-            {
-                previousGravityDirection = targetGravityDirection;
-            }
-
-            // Glätte den Übergang zwischen der vorherigen und der neuen Richtung
-            gravityDirection = Vector3.Lerp(previousGravityDirection, targetGravityDirection, Time.deltaTime * smoothingFactor);
-
-            // Speichere die aktuelle Richtung für den nächsten Frame
-            previousGravityDirection = gravityDirection;
-
-            // Debug: Visualisiere interpolierte Richtung
-            //Debug.DrawLine(playerPosition, playerPosition + gravityDirection, Color.green);
-
-            return gravityDirection;
-        }
-        else
+        if (newClosestTriangle == null)
         {
             Debug.LogError("No closest triangle found in KDTree");
             return Vector3.zero;
         }
+
+        bool needsUpdate = state.currentClosestTriangle == null ||
+                           Vector3.Distance(playerPosition, state.currentTriangleCenter) > thresholdDistance;
+
+        if (!needsUpdate)
+        {
+            foreach (var neighbor in state.currentClosestTriangle.neighbors)
+            {
+                if (Vector3.Distance(playerPosition, neighbor.GetCenter()) < neighborThresholdDistance)
+                {
+                    needsUpdate = true;
+                    break;
+                }
+            }
+        }
+
+        if (needsUpdate)
+        {
+            state.currentClosestTriangle = newClosestTriangle;
+            state.currentTriangleCenter = state.currentClosestTriangle.GetCenter();
+            UpdateNeighbors(state);
+        }
+
+        Vector3 interpolatedGravity = Vector3.zero;
+        float totalWeight = 0.0f;
+
+        foreach (var neighbor in state.currentNeighbors)
+        {
+            float weight = 1f / (Vector3.Distance(playerPosition, neighbor.GetCenter()) + 0.001f);
+            interpolatedGravity += neighbor.normal * weight;
+            totalWeight += weight;
+        }
+
+        if (totalWeight > 0)
+        {
+            interpolatedGravity /= totalWeight;
+        }
+        else
+        {
+            Debug.LogWarning("Total weight is zero, fallback to current triangle normal");
+            interpolatedGravity = state.currentClosestTriangle.normal;
+        }
+
+        Vector3 targetGravityDirection = -interpolatedGravity.normalized * gravityStrength;
+
+        if (state.previousGravityDirection == Vector3.zero)
+        {
+            state.previousGravityDirection = targetGravityDirection;
+        }
+
+        Vector3 gravityDirection = Vector3.Lerp(state.previousGravityDirection, targetGravityDirection, Time.deltaTime * smoothingFactor);
+
+        state.previousGravityDirection = gravityDirection;
+
+        return gravityDirection;
     }
 
     private Vector3 CalculateMeshBasedGravityHighPoly(Vector3 playerPosition)
@@ -309,32 +317,27 @@ public class GravityField : MonoBehaviour
     //     return -interpolatedNormal * gravityStrength;
     // }
 
-    private void UpdateNeighbors()
+    private void UpdateNeighbors(GravityState state)
     {
-        HashSet<Triangle> newNeighbors = new HashSet<Triangle>(currentClosestTriangle.neighbors);
+        HashSet<Triangle> newNeighbors = new HashSet<Triangle>(state.currentClosestTriangle.neighbors);
 
-        // Erstellung einer Kopie der aktuellen Nachbarn, um sie zu iterieren
-        var currentNeighborsCopy = currentNeighbors.ToList();
-
-        foreach (var neighbor in currentNeighborsCopy)
+        foreach (var neighbor in state.currentNeighbors.ToList())
         {
-            // Überprüfung, ob der Nachbar noch zu den aktuellen Nachbarn gehört
             if (!newNeighbors.Contains(neighbor))
             {
-                // Entferne Nachbarn, die nicht mehr relevant sind
-                currentNeighbors.Remove(neighbor);
+                state.currentNeighbors.Remove(neighbor);
             }
         }
 
-        // Neue Nachbarn werden hinzugefügt
         foreach (var neighbor in newNeighbors)
         {
-            if (!currentNeighbors.Contains(neighbor))
+            if (!state.currentNeighbors.Contains(neighbor))
             {
-                currentNeighbors.Add(neighbor);
+                state.currentNeighbors.Add(neighbor);
             }
         }
     }
+
     public float GravityStrength => gravityStrength;
     public float GravityFieldMass => gravityFieldMass;
     public float GravityFieldRadius => gravityFieldRadius;
@@ -351,8 +354,7 @@ public enum GravityFieldType
     CenterpointInverse,
     SimpleMesh,
     LowPolyMeshKDTree,
-    HighPolyMeshKDTree,
-    CalculateInterpolatedGravityWithNeighbors
+    HighPolyMeshKDTree
 }
 
 public enum GravityDirection

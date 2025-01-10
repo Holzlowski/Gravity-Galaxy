@@ -15,7 +15,6 @@ GameObject:
   - component: {fileID: 2931992474462533762}
   - component: {fileID: 6596458293095128532}
   - component: {fileID: 1962910588310991370}
-  - component: {fileID: 4014275944295111276}
   m_Layer: 0
   m_Name: Player
   m_TagString: Player
@@ -102,7 +101,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: eba579d1b69a5fc428df06e7ad7e8708, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  playerObject: {fileID: 4045079398751778650}
+  playerCharacter: {fileID: 0}
   cameraTransform: {fileID: 0}
   isGrounded: 0
 --- !u!114 &2931992474462533762
@@ -120,8 +119,8 @@ MonoBehaviour:
   speed: 10
   rotationSpeed: 10
   baseJumpForce: 10
-  lastMovementDirection: {x: 0, y: 0, z: 0}
-  maxJumpCount: 2
+  additionalJumpForce: 0.5
+  maxAdditionalHigherJumps: 2
   jumpCooldown: 5
 --- !u!114 &6596458293095128532
 MonoBehaviour:
@@ -155,20 +154,6 @@ MonoBehaviour:
   activeGravityFields: []
   rotationToPlanetSpeed: 5
   useGravityLaw: 1
---- !u!114 &4014275944295111276
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 826580501054278494}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 8776654d14e909140b979c9112be130a, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  rotationToPlanetSpeed: 10
-  currentGravityField: {fileID: 0}
 --- !u!1 &2060093882453474434
 GameObject:
   m_ObjectHideFlags: 0
@@ -181,7 +166,7 @@ GameObject:
   - component: {fileID: 2416022139252059083}
   - component: {fileID: 7172053540442757374}
   m_Layer: 0
-  m_Name: PlayerObject
+  m_Name: PlayerCharakter
   m_TagString: Player
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -263,7 +248,7 @@ GameObject:
   m_Component:
   - component: {fileID: 8504065026368090755}
   m_Layer: 0
-  m_Name: GroundCheck
+  m_Name: GroundDetector
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0

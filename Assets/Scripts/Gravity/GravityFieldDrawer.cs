@@ -15,9 +15,6 @@ public class GravityFieldDrawer : Editor
         SerializedProperty gravityStrengthProp = serializedObject.FindProperty("gravityStrength");
         EditorGUILayout.PropertyField(gravityStrengthProp, new GUIContent("Gravity Strength"));
 
-        // Zeichne das priority-Feld
-        SerializedProperty priorityProp = serializedObject.FindProperty("priority");
-        EditorGUILayout.PropertyField(priorityProp, new GUIContent("Priority"));
 
         // Zeichne das gravityFieldMass-Feld
         SerializedProperty gravityFieldMassProp = serializedObject.FindProperty("gravityFieldMass");
@@ -31,13 +28,17 @@ public class GravityFieldDrawer : Editor
         SerializedProperty gravityDelay = serializedObject.FindProperty("gravityDelay");
         EditorGUILayout.PropertyField(gravityDelay, new GUIContent("Gravity Delay"));
 
+        // Zeichne das priority-Feld
+        SerializedProperty priorityProp = serializedObject.FindProperty("priority");
+        EditorGUILayout.PropertyField(priorityProp, new GUIContent("Priority"));
+
         if ((GravityFieldType)gravityFieldTypeProp.enumValueIndex == GravityFieldType.SimpleMesh)
         {
             SerializedProperty meshColliderProp = serializedObject.FindProperty("simpleCollider");
             EditorGUILayout.PropertyField(meshColliderProp, new GUIContent("Collider"));
         }
 
-        if ((GravityFieldType)gravityFieldTypeProp.enumValueIndex == GravityFieldType.OneDirection)
+        if ((GravityFieldType)gravityFieldTypeProp.enumValueIndex == GravityFieldType.OneDirection || (GravityFieldType)gravityFieldTypeProp.enumValueIndex == GravityFieldType.TransformOneDirection)
         {
             SerializedProperty gravityDirectionType = serializedObject.FindProperty("gravityDirectionType");
             EditorGUILayout.PropertyField(gravityDirectionType, new GUIContent("Gravity Direction Type"));
@@ -63,13 +64,6 @@ public class GravityFieldDrawer : Editor
         {
             SerializedProperty meshColliderProp = serializedObject.FindProperty("meshCollider");
             EditorGUILayout.PropertyField(meshColliderProp, new GUIContent("Mesh Collider"));
-        }
-
-        if ((GravityFieldType)gravityFieldTypeProp.enumValueIndex == GravityFieldType.CalculateInterpolatedGravityWithNeighbors)
-        {
-            SerializedProperty meshColliderProp = serializedObject.FindProperty("meshCollider");
-            EditorGUILayout.PropertyField(meshColliderProp, new GUIContent("Mesh Collider"));
-
         }
 
 

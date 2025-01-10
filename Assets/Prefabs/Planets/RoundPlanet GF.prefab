@@ -13,7 +13,7 @@ GameObject:
   - component: {fileID: 7397868228741969569}
   - component: {fileID: 5333799711043108599}
   m_Layer: 6
-  m_Name: Kleiner Planet
+  m_Name: Round Planet
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -173,7 +173,13 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   gravityFieldType: 0
-  meshCollider: {fileID: 0}
   gravityStrength: 9.81
   gravityFieldMass: 10
   priority: 0
+  gravityDelay: 0
+  simpleCollider: {fileID: 0}
+  meshCollider: {fileID: 0}
+  thresholdDistance: 0.1
+  neighborThresholdDistance: 0.1
+  smoothingFactor: 10
+  gravityDirectionType: 0

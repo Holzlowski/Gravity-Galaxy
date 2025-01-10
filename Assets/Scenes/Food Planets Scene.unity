@@ -154,14 +154,16 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   gravityFieldType: 1
-  simpleCollider: {fileID: 0}
-  meshCollider: {fileID: 0}
   gravityStrength: 9.81
   gravityFieldMass: 10
   priority: 1
+  gravityDelay: 0
+  simpleCollider: {fileID: 0}
+  meshCollider: {fileID: 0}
   thresholdDistance: 0.1
   neighborThresholdDistance: 0.1
   smoothingFactor: 10
+  gravityDirectionType: 0
 --- !u!65 &22544884
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -903,7 +905,7 @@ PrefabInstance:
     - target: {fileID: 299452601642577651, guid: f1197a62d60c6b64e957713b44f467ef,
         type: 3}
       propertyPath: gravityFieldType
-      value: 4
+      value: 5
       objectReference: {fileID: 0}
     - target: {fileID: 299452601642577651, guid: f1197a62d60c6b64e957713b44f467ef,
         type: 3}
@@ -1054,17 +1056,17 @@ PrefabInstance:
     - target: {fileID: 2625683279748000480, guid: 36fe5dfc6f72ace4ea5ddf696b7e5eb1,
         type: 3}
       propertyPath: m_LocalPosition.x
-      value: -12.86
+      value: -61.29
       objectReference: {fileID: 0}
     - target: {fileID: 2625683279748000480, guid: 36fe5dfc6f72ace4ea5ddf696b7e5eb1,
         type: 3}
       propertyPath: m_LocalPosition.y
-      value: 0.3
+      value: 15.344
       objectReference: {fileID: 0}
     - target: {fileID: 2625683279748000480, guid: 36fe5dfc6f72ace4ea5ddf696b7e5eb1,
         type: 3}
       propertyPath: m_LocalPosition.z
-      value: 7.11
+      value: -51.45
       objectReference: {fileID: 0}
     - target: {fileID: 2625683279748000480, guid: 36fe5dfc6f72ace4ea5ddf696b7e5eb1,
         type: 3}
@@ -1109,7 +1111,7 @@ PrefabInstance:
     - target: {fileID: 2984430431698697990, guid: 36fe5dfc6f72ace4ea5ddf696b7e5eb1,
         type: 3}
       propertyPath: m_IsActive
-      value: 0
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 3242088691679072745, guid: 36fe5dfc6f72ace4ea5ddf696b7e5eb1,
         type: 3}
@@ -1137,7 +1139,7 @@ PrefabInstance:
     - target: {fileID: 299452601642577651, guid: f1197a62d60c6b64e957713b44f467ef,
         type: 3}
       propertyPath: gravityFieldType
-      value: 4
+      value: 5
       objectReference: {fileID: 0}
     - target: {fileID: 299452601642577651, guid: f1197a62d60c6b64e957713b44f467ef,
         type: 3}
@@ -1510,7 +1512,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: eba579d1b69a5fc428df06e7ad7e8708, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  playerObject: {fileID: 1574030190}
+  playerCharacter: {fileID: 1574030190}
   cameraTransform: {fileID: 330585546}
   isGrounded: 0
 --- !u!136 &1294120416
@@ -1568,8 +1570,8 @@ MonoBehaviour:
   speed: 10
   rotationSpeed: 10
   baseJumpForce: 15
-  lastMovementDirection: {x: 0, y: 0, z: 0}
-  maxJumpCount: 2
+  additionalJumpForce: 0.5
+  maxAdditionalHigherJumps: 2
   jumpCooldown: 5
 --- !u!114 &1294120420
 MonoBehaviour:
@@ -2210,7 +2212,7 @@ PrefabInstance:
     - target: {fileID: 299452601642577651, guid: f1197a62d60c6b64e957713b44f467ef,
         type: 3}
       propertyPath: gravityFieldType
-      value: 4
+      value: 5
       objectReference: {fileID: 0}
     - target: {fileID: 299452601642577651, guid: f1197a62d60c6b64e957713b44f467ef,
         type: 3}

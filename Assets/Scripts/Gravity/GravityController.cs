@@ -1,70 +1,122 @@
+using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 
 public class GravityController : MonoBehaviour
 {
+    private Rigidbody rb;
+
+    [SerializeField]
+    private List<GravityField> activeGravityFields = new List<GravityField>(); // Liste der aktiven Gravitationsfelder
     private Vector3 gravityDirection;
+    private GravityState gravityState;
 
     [SerializeField]
     private float rotationToPlanetSpeed = 10f;
-    private float gravityStrength;
+    private int lastAppliedPriority = -1;
 
     [SerializeField]
-    private Transform currentGravityField;
+    private bool useGravityLaw = true;
+    private GroundDetection groundDetection;
 
-    GravityField gravityField;
-    private Vector3 surfaceNormal;
+    void Awake()
+    {
+        rb = GetComponent<Rigidbody>();
+        groundDetection = GetComponent<GroundDetection>();
+        gravityState = new GravityState();
+    }
 
     public Vector3 GetGravityDirection()
     {
         return gravityDirection;
     }
 
-    private void Awake()
+    public void ApplyGravitation()
     {
-        gravityField = currentGravityField.GetComponent<GravityField>();
-        gravityStrength = gravityField.GravityStrength;
-        gravityDirection = gravityField.CalculateGravityDirection(transform.position);
-    }
+        Vector3 totalGravity = Vector3.zero;
 
-    public void ApplyGravitation(Rigidbody rb)
-    {
-        if (GameManager.Instance.useNormals)
+        if (activeGravityFields.Count == 0)
         {
-            // Verwendung der entgegengesetzte Richtung der Normalen
-            gravityDirection = -surfaceNormal.normalized * gravityStrength;
-            rb.AddForce(gravityDirection, ForceMode.Acceleration);
+            gravityDirection = Vector3.zero;
+            rb.AddForce(totalGravity, ForceMode.Acceleration);
+            return;
         }
-        else if (currentGravityField != null)
+
+        // Aktualisiere die Verzögerungstimer aller GravityFields
+        foreach (var gravityField in activeGravityFields)
         {
-            // Richtung zum Zentrum des Gravitationsfeldes
-            gravityDirection =
-                // (currentGravityField.position - rb.position).normalized * gravityStrength;
-                gravityField.CalculateGravityDirection(rb.position);
+            gravityField.UpdateDelayTimer(Time.deltaTime);
+        }
 
-            if (GameManager.Instance.useGravityLaw == true)
-            {
-                // Die Entfernung zum Zentrum des Gravitationsfeldes
-                float distance = Vector3.Distance(rb.position, currentGravityField.position);
-                float gravityForce = CalculateGravityForce(rb, distance);
+        // Finde die höchste Priorität
+        int currentHighestPriority = activeGravityFields.Max(field => field.Priority);
 
-                rb.AddForce(gravityDirection * gravityForce, ForceMode.Acceleration);
-            }
-            else
+        // Überprüfe, ob sich die Priorität geändert hat
+        if (currentHighestPriority != lastAppliedPriority)
+        {
+            lastAppliedPriority = currentHighestPriority;
+
+            // Setze den Delay für alle Felder mit der neuen höchsten Priorität zurück
+            foreach (var field in activeGravityFields)
             {
-                // Konstante Gravitationskraft
-                rb.AddForce(gravityDirection, ForceMode.Acceleration);
+                if (field.Priority == currentHighestPriority)
+                {
+                    field.ResetDelay();
+                }
             }
         }
+
+        // Finde die höchste Priorität und filtere die relevanten Felder
+        var highestPriorityFields = GetHighestPriorityFields();
+
+        foreach (var gravityField in highestPriorityFields)
+        {
+            // Ignoriere Felder mit aktiver Verzögerung
+            if (gravityField.IsDelayActive)
+            {
+                continue;
+            }
+
+            totalGravity += CalculateFieldGravity(gravityField);
+        }
+        gravityDirection = totalGravity.normalized;
+
+        rb.AddForce(totalGravity, ForceMode.Acceleration);
     }
 
-    private float CalculateGravityForce(Rigidbody rb, float distance)
+    private Vector3 CalculateFieldGravity(GravityField gravityField)
     {
-        // Gravitationskraft basierend auf der Entfernung und den Massen
-        // F = G * (m1 * m2) / r^2
-        return gravityStrength * (rb.mass * gravityField.GravityFieldMass) / (distance * distance);
+        Vector3 fieldGravityDirection = gravityField.CalculateGravityDirection(rb.position, gravityState);
+        float distance = Vector3.Distance(rb.position, gravityField.transform.position);
+        float colliderRadius = gravityField.GravityFieldRadius;
+        float fieldGravityStrength;
+
+        if (gravityField.GravityFieldType == GravityFieldType.TransformOneDirection)
+        {
+            fieldGravityStrength = gravityField.GravityStrength;
+        }
+        else
+        {
+            fieldGravityStrength = useGravityLaw
+                ? CalculateGravityForce(gravityField, distance)
+                : gravityField.GravityStrength;
+
+            if (distance > colliderRadius + 5)
+            {
+                fieldGravityStrength = gravityField.GravityStrength;
+            }
+        }
+        return fieldGravityDirection * fieldGravityStrength;
     }
 
-    public void RotateToPlanet(Rigidbody rb)
+    private float CalculateGravityForce(GravityField gravityField, float distance)
+    {
+        return gravityField.GravityStrength
+            * (rb.mass * gravityField.GravityFieldMass)
+            / (distance * distance);
+    }
+
+    public void RotateToPlanet()
     {
         Quaternion upRotation = Quaternion.FromToRotation(transform.up, -gravityDirection);
         Quaternion newRotation = Quaternion.Slerp(
@@ -75,98 +127,92 @@ public class GravityController : MonoBehaviour
         rb.MoveRotation(newRotation);
     }
 
-    public void PerformRaycastToPlanet()
+    private void CheckGravityFieldDistances()
     {
-        RaycastHit hit;
-        Vector3 directionToPlanet = (currentGravityField.position - transform.position).normalized;
-        if (Physics.Raycast(transform.position, directionToPlanet, out hit))
+        for (int i = activeGravityFields.Count - 1; i >= 0; i--)
         {
-            surfaceNormal = hit.normal;
+            GravityField gravityField = activeGravityFields[i];
+            float distance = Vector3.Distance(transform.position, gravityField.transform.position);
+            float radius = gravityField.GravityFieldRadius;
+            if (distance > radius)
+            {
+                activeGravityFields.RemoveAt(i); // Feld entfernen, wenn außerhalb des Radius
+            }
         }
     }
 
-    private void OnTriggerEnter(Collider other)
+    private List<GravityField> GetHighestPriorityFields()
     {
-        if (GameManager.Instance.switchGravityFieldBasedOnDistance == true)
-            return;
-
-        if (other.transform == currentGravityField)
-        {
-            return;
-        }
-
-        if (other.CompareTag("GravityField"))
-        {
-            UpdateGravityField(other.transform);
-        }
+        int highestPriority = activeGravityFields.Max(field => field.Priority);
+        return activeGravityFields.Where(field => field.Priority == highestPriority).ToList();
     }
 
     private void OnTriggerStay(Collider other)
     {
-        if (GameManager.Instance.switchGravityFieldBasedOnDistance == false)
-            return;
-
-        if (other.transform == currentGravityField)
+        if (!groundDetection.IsGrounded && other.CompareTag("GravityField"))
         {
-            return;
-        }
-
-        if (other.CompareTag("GravityField"))
-        {
-            HandleGravityField(other.transform);
-        }
-    }
-
-    private void UpdateGravityField(Transform newGravityField)
-    {
-        gravityField = newGravityField.GetComponent<GravityField>();
-        gravityStrength = gravityField.GravityStrength;
-        gravityDirection = gravityField.CalculateGravityDirection(transform.position);
-        currentGravityField = newGravityField;
-    }
-
-    private void HandleGravityField(Transform newGravityField)
-    {
-        if (currentGravityField != null)
-        {
-            float distanceToCurrentPlanet = Vector3.Distance(
-                transform.position,
-                currentGravityField.position
-            );
-
-            float distanceToNewPlanet = Vector3.Distance(
-                transform.position,
-                newGravityField.position
-            );
-
-            // Ändere den currentPlanet nur, wenn der Spieler näher am neuen Planeten ist
-            if (distanceToNewPlanet < distanceToCurrentPlanet)
-            {
-                UpdateGravityField(newGravityField);
-            }
-        }
-        else
-        {
-            UpdateGravityField(newGravityField);
+            GravityField gravityField = other.GetComponent<GravityField>();
+            AddGravityField(gravityField);
+            CheckGravityFieldDistances();
         }
     }
 
     private void OnTriggerExit(Collider other)
     {
-        if (GameManager.Instance.allowSpaceFlight && other.transform == currentGravityField)
+        if (other.CompareTag("GravityField"))
         {
-            currentGravityField = null;
-            gravityField = null;
-            gravityDirection = Vector3.zero;
+            RemoveGravityField(other.GetComponent<GravityField>());
+            CheckGravityFieldDistances();
         }
     }
 
-    private void OnCollisionStay(Collision collision)
+    private void AddGravityField(GravityField newGravityField)
     {
-        if (GameManager.Instance.useNormals && collision.gameObject.CompareTag("Ground"))
+        if (!activeGravityFields.Contains(newGravityField))
         {
-            // Normalvektor der Oberfläche
-            surfaceNormal = collision.contacts[0].normal;
+            newGravityField.ResetDelay(); // Verzögerung starten
+            activeGravityFields.Add(newGravityField);
+        }
+    }
+
+    private void RemoveGravityField(GravityField gravityField)
+    {
+        if (GameManager.Instance.allowSpaceFlight == false && activeGravityFields.Count == 1)
+        {
+            return;
+        }
+        activeGravityFields.Remove(gravityField);
+    }
+
+    public void GetClosestGravityField()
+    {
+        float minDistance = float.MaxValue;
+        GravityField closestField = null;
+
+        foreach (var gravityField in GetHighestPriorityFields())
+        {
+            float distance = Vector3.Distance(transform.position, gravityField.transform.position);
+            if (distance < minDistance)
+            {
+                minDistance = distance;
+                closestField = gravityField;
+            }
+        }
+
+        if (closestField != null)
+        {
+            activeGravityFields.Clear();
+            closestField.ResetDelay(); // Verzögerung aktivieren
+            activeGravityFields.Add(closestField);
         }
     }
 }
+
+//  private void RotateAroundTheSun()
+//     {
+//         transform.RotateAround(
+//             GameManager.Instance.Sun.transform.position,
+//             Vector3.right,
+//             rotationAroundSun * Time.deltaTime
+//         );
+//     }

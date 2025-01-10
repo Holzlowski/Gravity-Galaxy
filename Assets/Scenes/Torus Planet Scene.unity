@@ -157,12 +157,12 @@ MonoBehaviour:
   gravityStrength: 9.81
   gravityFieldMass: 10
   priority: 1
+  gravityDelay: 0
   simpleCollider: {fileID: 0}
   meshCollider: {fileID: 0}
   thresholdDistance: 0.1
   neighborThresholdDistance: 0.1
   smoothingFactor: 5
-  gravityDelay: 0
   gravityDirectionType: 0
 --- !u!65 &22544884
 BoxCollider:
@@ -209,20 +209,25 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 0}
     m_Modifications:
+    - target: {fileID: 1217426023310672643, guid: 36fe5dfc6f72ace4ea5ddf696b7e5eb1,
+        type: 3}
+      propertyPath: useGravityLaw
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 2625683279748000480, guid: 36fe5dfc6f72ace4ea5ddf696b7e5eb1,
         type: 3}
       propertyPath: m_LocalPosition.x
-      value: 0.73
+      value: -5.88
       objectReference: {fileID: 0}
     - target: {fileID: 2625683279748000480, guid: 36fe5dfc6f72ace4ea5ddf696b7e5eb1,
         type: 3}
       propertyPath: m_LocalPosition.y
-      value: 8.43
+      value: 9
       objectReference: {fileID: 0}
     - target: {fileID: 2625683279748000480, guid: 36fe5dfc6f72ace4ea5ddf696b7e5eb1,
         type: 3}
       propertyPath: m_LocalPosition.z
-      value: 30.57
+      value: 31.01
       objectReference: {fileID: 0}
     - target: {fileID: 2625683279748000480, guid: 36fe5dfc6f72ace4ea5ddf696b7e5eb1,
         type: 3}
@@ -267,7 +272,7 @@ PrefabInstance:
     - target: {fileID: 2984430431698697990, guid: 36fe5dfc6f72ace4ea5ddf696b7e5eb1,
         type: 3}
       propertyPath: m_IsActive
-      value: 0
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 3242088691679072745, guid: 36fe5dfc6f72ace4ea5ddf696b7e5eb1,
         type: 3}
@@ -331,15 +336,15 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   gravityFieldType: 5
-  gravityStrength: 9.81
+  gravityStrength: 20
   gravityFieldMass: 10
   priority: 1
+  gravityDelay: 0
   simpleCollider: {fileID: 0}
   meshCollider: {fileID: 2048377602}
-  thresholdDistance: 2
-  neighborThresholdDistance: 0.3
+  thresholdDistance: 1
+  neighborThresholdDistance: 0.2
   smoothingFactor: 5
-  gravityDelay: 0
   gravityDirectionType: 0
 --- !u!4 &138769708
 Transform:
@@ -969,6 +974,11 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 0}
     m_Modifications:
+    - target: {fileID: 1217426023310672643, guid: 36fe5dfc6f72ace4ea5ddf696b7e5eb1,
+        type: 3}
+      propertyPath: useGravityLaw
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 2625683279748000480, guid: 36fe5dfc6f72ace4ea5ddf696b7e5eb1,
         type: 3}
       propertyPath: m_LocalPosition.x
@@ -977,12 +987,12 @@ PrefabInstance:
     - target: {fileID: 2625683279748000480, guid: 36fe5dfc6f72ace4ea5ddf696b7e5eb1,
         type: 3}
       propertyPath: m_LocalPosition.y
-      value: 3
+      value: 1.53
       objectReference: {fileID: 0}
     - target: {fileID: 2625683279748000480, guid: 36fe5dfc6f72ace4ea5ddf696b7e5eb1,
         type: 3}
       propertyPath: m_LocalPosition.z
-      value: 44.9
+      value: 75.92
       objectReference: {fileID: 0}
     - target: {fileID: 2625683279748000480, guid: 36fe5dfc6f72ace4ea5ddf696b7e5eb1,
         type: 3}
@@ -1027,7 +1037,7 @@ PrefabInstance:
     - target: {fileID: 2984430431698697990, guid: 36fe5dfc6f72ace4ea5ddf696b7e5eb1,
         type: 3}
       propertyPath: m_IsActive
-      value: 0
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 3242088691679072745, guid: 36fe5dfc6f72ace4ea5ddf696b7e5eb1,
         type: 3}
@@ -1186,6 +1196,11 @@ PrefabInstance:
     m_Modifications:
     - target: {fileID: 611359743151083824, guid: 666f70ea217188349b4ff55f712cd659,
         type: 3}
+      propertyPath: gravityStrength
+      value: 9.8
+      objectReference: {fileID: 0}
+    - target: {fileID: 611359743151083824, guid: 666f70ea217188349b4ff55f712cd659,
+        type: 3}
       propertyPath: gravityFieldType
       value: 6
       objectReference: {fileID: 0}
@@ -1243,6 +1258,41 @@ PrefabInstance:
         type: 3}
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 7942752703992450128, guid: 666f70ea217188349b4ff55f712cd659,
+        type: 3}
+      propertyPath: m_LocalRotation.w
+      value: 0.6977862
+      objectReference: {fileID: 0}
+    - target: {fileID: 7942752703992450128, guid: 666f70ea217188349b4ff55f712cd659,
+        type: 3}
+      propertyPath: m_LocalRotation.x
+      value: -0.6977864
+      objectReference: {fileID: 0}
+    - target: {fileID: 7942752703992450128, guid: 666f70ea217188349b4ff55f712cd659,
+        type: 3}
+      propertyPath: m_LocalRotation.y
+      value: -0.114430174
+      objectReference: {fileID: 0}
+    - target: {fileID: 7942752703992450128, guid: 666f70ea217188349b4ff55f712cd659,
+        type: 3}
+      propertyPath: m_LocalRotation.z
+      value: 0.114430174
+      objectReference: {fileID: 0}
+    - target: {fileID: 7942752703992450128, guid: 666f70ea217188349b4ff55f712cd659,
+        type: 3}
+      propertyPath: m_LocalEulerAnglesHint.x
+      value: -71.374
+      objectReference: {fileID: 0}
+    - target: {fileID: 7942752703992450128, guid: 666f70ea217188349b4ff55f712cd659,
+        type: 3}
+      propertyPath: m_LocalEulerAnglesHint.y
+      value: -90
+      objectReference: {fileID: 0}
+    - target: {fileID: 7942752703992450128, guid: 666f70ea217188349b4ff55f712cd659,
+        type: 3}
+      propertyPath: m_LocalEulerAnglesHint.z
+      value: 90
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
@@ -1356,7 +1406,7 @@ Transform:
   m_GameObject: {fileID: 1294120412}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0.0000037252898, w: -1}
-  m_LocalPosition: {x: -9.5, y: 8.88, z: 25.57}
+  m_LocalPosition: {x: -7.56, y: 9.11, z: 29.81}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
@@ -1403,7 +1453,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: eba579d1b69a5fc428df06e7ad7e8708, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  playerObject: {fileID: 1574030190}
+  playerCharacter: {fileID: 1574030190}
   cameraTransform: {fileID: 330585546}
   isGrounded: 0
 --- !u!136 &1294120416
@@ -1458,10 +1508,11 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: ceb89231ac5420941bb3a6d3f4d8e574, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  speed: 5
+  speed: 20
   rotationSpeed: 10
   baseJumpForce: 5
-  maxJumpCount: 2
+  additionalJumpForce: 0.5
+  maxAdditionalHigherJumps: 2
   jumpCooldown: 5
 --- !u!114 &1294120420
 MonoBehaviour:
@@ -1476,7 +1527,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   activeGravityFields: []
-  rotationToPlanetSpeed: 2
+  rotationToPlanetSpeed: 10
   useGravityLaw: 1
 --- !u!1 &1473576734
 GameObject:
@@ -1990,7 +2041,7 @@ MonoBehaviour:
   target: {fileID: 1294120413}
   cameraTransform: {fileID: 330585546}
   rotationSpeed: 60
-  smoothSpeed: 5
+  smoothSpeed: 60
   offset: {x: 0, y: 2.5, z: -10}
 --- !u!4 &2042051696
 Transform:

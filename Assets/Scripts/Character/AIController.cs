@@ -13,13 +13,12 @@ public class AIController : MonoBehaviour
 
     private bool isChilling = false;
     private float chillTimer;
-    private float chillDuration;
     private int remainingChillJumps;
     private float jumpTimer;
     private int randomDirection = -1;
 
     Movement aiMovement;
-    GravityControllerForMultipleFields gravityControllerForMultipleFields;
+    GravityController gravityController;
     GroundDetection groundDetection;
 
     // Start is called before the first frame update
@@ -28,7 +27,7 @@ public class AIController : MonoBehaviour
         rb = GetComponent<Rigidbody>();
         aiMovement = GetComponent<Movement>();
         groundDetection = GetComponent<GroundDetection>();
-        gravityControllerForMultipleFields = GetComponent<GravityControllerForMultipleFields>();
+        gravityController = GetComponent<GravityController>();
 
         currentDirection = transform.forward;
     }
@@ -36,8 +35,7 @@ public class AIController : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        Vector3 gravityDirection = gravityControllerForMultipleFields.GetGravityDirection();
-        gravityControllerForMultipleFields.ApplyGravitation();
+        gravityController.ApplyGravitation();
         ChangeDirection(randomDirection);
 
         if (isChilling)
@@ -71,11 +69,11 @@ public class AIController : MonoBehaviour
             }
             else if (groundDetection.IsGrounded)
             {
-                aiMovement.Move(currentDirection, npcObject, gravityDirection);
+                aiMovement.Move(currentDirection, npcObject);
                 aiMovement.SetLastMovementDirectionToZero();
             }
         }
-        gravityControllerForMultipleFields.RotateToPlanet();
+        gravityController.RotateToPlanet();
     }
 
     private void ChangeDirection(int randomDirection)

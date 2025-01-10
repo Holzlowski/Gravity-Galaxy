@@ -19,7 +19,10 @@ public class Movement : MonoBehaviour
     private float baseJumpForce = 10f;
 
     [SerializeField]
-    private int maxJumpCount = 2;
+    private float additionalJumpForce = 0.5f;
+
+    [SerializeField]
+    private int maxAdditionalHigherJumps = 2;
 
     [SerializeField]
     private float jumpCooldown = 0.5f;
@@ -36,7 +39,6 @@ public class Movement : MonoBehaviour
     public void Move(
         Vector3 directionVector,
         Transform characterObject,
-        Vector3 gravityDirection,
         Transform cameraTransform = null // Optionales cameraTransform
     )
     {
@@ -56,16 +58,16 @@ public class Movement : MonoBehaviour
 
     public void Jump()
     {
-        // Überprüfung, ob der letzte Sprung innerhalb des Zeitfensters war
-        if (CanJumpAgain())
+        // Überprüfung, ob der letzte Sprung innerhalb des Zeitfensters war 
+        // und ob die maximale Anzahl an Sprüngen noch nicht erreicht wurde
+        if (CanJumpHigher())
         {
             jumpCount++;
         }
         else
         {
-            jumpCount = 1;
+            jumpCount = 0;
         }
-
         lastJumpTime = Time.time;
 
         Vector3 jumpDirection = CalculateJumpDirection();
@@ -78,7 +80,7 @@ public class Movement : MonoBehaviour
         Vector3 movementDirection;
         if (cameraTransform != null)
         {
-            // Spielerbewegung: Nutze Kameraausrichtung
+            // Spielerbewegung relativ zur Kamera
             Vector3 cameraRotation = new Vector3(0, cameraTransform.localEulerAngles.y, 0);
             Vector3 rotatedDirection = Quaternion.Euler(cameraRotation) * directionVector;
             movementDirection =
@@ -86,7 +88,7 @@ public class Movement : MonoBehaviour
         }
         else
         {
-            // NPC-Bewegung: Nutze directionVector direkt
+            // NPC-Bewegung
             movementDirection = directionVector;
         }
 
@@ -106,15 +108,15 @@ public class Movement : MonoBehaviour
         );
     }
 
-    private bool CanJumpAgain()
+    private bool CanJumpHigher()
     {
-        return Time.time - lastJumpTime <= jumpCooldown && jumpCount <= maxJumpCount;
+        return Time.time - lastJumpTime <= jumpCooldown && jumpCount < maxAdditionalHigherJumps;
     }
 
     private Vector3 CalculateJumpDirection()
     {
         // Sprungkraft basierend auf der Anzahl der aufeinanderfolgenden Sprünge
-        float currentJumpForce = baseJumpForce * (1 + 0.5f * (jumpCount - 1));
+        float currentJumpForce = baseJumpForce * (1 + additionalJumpForce * jumpCount);
 
         Vector3 jumpDirection = transform.up * currentJumpForce * 0.5f;
         if (lastMovementDirection.magnitude > 0.1f)
@@ -128,41 +130,4 @@ public class Movement : MonoBehaviour
     {
         lastMovementDirection = Vector3.zero;
     }
-
-    // if (GameManager.Instance.equalJumpHeight)
-    // {
-    //     float gravityStrength = GetGravityStrengthFromGround();
-    //     // Berechnung der Sprungkraft basierend auf der Gravitationsstärke und der Anzahl der Sprünge
-    //     // Die Formel basiert auf der Gleichung für die kinetische Energie und die potentielle Energie:
-    //     // E_kin = 1/2 * m * v^2 und E_pot = m * g * h
-    //     // Um die Höhe h zu erreichen, muss die kinetische Energie in potentielle Energie umgewandelt werden:
-    //     // 1/2 * m * v^2 = m * g * h => v = sqrt(2 * g * h)
-    //     // Die Sprungkraft F ist proportional zur Geschwindigkeit v:
-    //     // F = sqrt(2 * g * h) * (1 + 0.5 * (jumpCount - 1))
-    //     currentJumpForce =
-    //         Mathf.Sqrt(2 * gravityStrength * baseJumpForce) * (1 + 0.5f * (jumpCount - 1));
-    // }
-
-    // private float GetGravityStrengthFromGround()
-    // {
-    //     RaycastHit hit;
-    //     if (Physics.Raycast(transform.position, -transform.up, out hit, 2.5f))
-    //     {
-    //         int groundLayer = LayerMask.NameToLayer("Ground");
-    //         if (hit.collider.gameObject.layer == groundLayer)
-    //         {
-    //             GravityField gravityField = hit.collider.GetComponentInParent<GravityField>();
-    //             if (gravityField != null)
-    //             {
-    //                 float newGravityStrength = gravityField.GetGravityStrength();
-    //                 if (newGravityStrength != currentGravityStrength)
-    //                 {
-    //                     currentGravityStrength = newGravityStrength;
-    //                     Debug.Log("Neue Gravitationsstärke: " + currentGravityStrength);
-    //                 }
-    //             }
-    //         }
-    //     }
-    //     return currentGravityStrength;
-    // }
 }

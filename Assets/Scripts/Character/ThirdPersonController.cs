@@ -6,24 +6,23 @@ public class ThirdPersonController : MonoBehaviour
 {
     [Header("References")]
     [SerializeField]
-    private Transform playerObject;
+    private Transform playerCharacter;
 
     [SerializeField]
     private Transform cameraTransform;
 
     private Movement playerMovement;
     private GroundDetection groundDetection;
-    private GravityControllerForMultipleFields gravityControllerForMultipleFields;
+    private GravityController gravityController;
 
     [SerializeField]
     private bool isGrounded;
 
     void Awake()
     {
-        //rb = GetComponent<Rigidbody>();
         playerMovement = GetComponent<Movement>();
         groundDetection = GetComponent<GroundDetection>();
-        gravityControllerForMultipleFields = GetComponent<GravityControllerForMultipleFields>();
+        gravityController = GetComponent<GravityController>();
     }
 
     private void Update()
@@ -34,17 +33,16 @@ public class ThirdPersonController : MonoBehaviour
 
     private void ApplyGravityAndMovement()
     {
-        Vector3 gravityDirection = gravityControllerForMultipleFields.GetGravityDirection();
-        HandleMovementAndJump(gravityDirection);
-        gravityControllerForMultipleFields.ApplyGravitation();
-        gravityControllerForMultipleFields.RotateToPlanet();
+        HandleMovementAndJump();
+        gravityController.ApplyGravitation();
+        gravityController.RotateToPlanet();
     }
 
-    private void HandleMovementAndJump(Vector3 gravityDirection)
+    private void HandleMovementAndJump()
     {
         if (isGrounded)
         {
-            playerMovement.Move(GetInputVector(), playerObject, gravityDirection, cameraTransform);
+            playerMovement.Move(GetInputVector(), playerCharacter, cameraTransform);
             if (Input.GetKeyDown(KeyCode.Space))
             {
                 playerMovement.Jump();
@@ -61,9 +59,4 @@ public class ThirdPersonController : MonoBehaviour
     {
         isGrounded = groundDetection.IsGrounded;
     }
-
-    // public bool IsGrounded
-    // {
-    //     get { return isGrounded; }
-    // }
 }

@@ -258,16 +258,16 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: f4a38d102e5150f428fc261dcab95945, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  gravityFieldType: 1
+  gravityFieldType: 2
   gravityStrength: 9.81
   gravityFieldMass: 10
   priority: 1
+  gravityDelay: 0
   simpleCollider: {fileID: 1473576736}
   meshCollider: {fileID: 0}
   thresholdDistance: 0.1
   neighborThresholdDistance: 0.1
   smoothingFactor: 10
-  gravityDelay: 0
   gravityDirectionType: 0
 --- !u!65 &22544884
 BoxCollider:
@@ -324,7 +324,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!4 &42478854
 Transform:
   m_ObjectHideFlags: 0
@@ -352,7 +352,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 77b5e80f3fa98944aaa5a0d32592b8b6, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  waitTime: 3
+  waitTime: 0
   targetObject: {fileID: 0}
 --- !u!23 &42478857
 MeshRenderer:
@@ -529,7 +529,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!114 &136399290
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -590,8 +590,9 @@ MonoBehaviour:
   speed: 2
   rotationSpeed: 10
   baseJumpForce: 10
-  maxJumpCount: 1
-  jumpCooldown: 0
+  additionalJumpForce: 0.5
+  maxAdditionalHigherJumps: 2
+  jumpCooldown: 5
 --- !u!54 &136399294
 Rigidbody:
   m_ObjectHideFlags: 0
@@ -655,7 +656,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!4 &287067331
 Transform:
   m_ObjectHideFlags: 0
@@ -1105,13 +1106,13 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 547476401}
   serializedVersion: 2
-  m_LocalRotation: {x: -0, y: -0, z: -0.70710707, w: 0.70710653}
+  m_LocalRotation: {x: -0, y: -0, z: 0.7071067, w: 0.7071069}
   m_LocalPosition: {x: -10.88, y: 0, z: -12.37}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 673674258}
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: -90}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 90}
 --- !u!114 &547476403
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1247,12 +1248,12 @@ MonoBehaviour:
   gravityStrength: 9.81
   gravityFieldMass: 10
   priority: 0
+  gravityDelay: 0
   simpleCollider: {fileID: 0}
   meshCollider: {fileID: 0}
   thresholdDistance: 0.1
   neighborThresholdDistance: 0.1
   smoothingFactor: 10
-  gravityDelay: 0
   gravityDirectionType: 0
 --- !u!1 &673674256
 GameObject:
@@ -1335,15 +1336,15 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   gravityFieldType: 0
-  gravityStrength: 9.91
+  gravityStrength: 9.81
   gravityFieldMass: 10
   priority: 0
+  gravityDelay: 0
   simpleCollider: {fileID: 0}
   meshCollider: {fileID: 0}
   thresholdDistance: 0.1
   neighborThresholdDistance: 0.1
   smoothingFactor: 10
-  gravityDelay: 0
   gravityDirectionType: 0
 --- !u!135 &716822154
 SphereCollider:
@@ -1402,7 +1403,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!114 &769821156
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1463,7 +1464,8 @@ MonoBehaviour:
   speed: 2
   rotationSpeed: 10
   baseJumpForce: 10
-  maxJumpCount: 1
+  additionalJumpForce: 0.5
+  maxAdditionalHigherJumps: 2
   jumpCooldown: 0
 --- !u!54 &769821160
 Rigidbody:
@@ -1737,7 +1739,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!4 &909208349
 Transform:
   m_ObjectHideFlags: 0
@@ -2027,6 +2029,12 @@ MeshFilter:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 941179526}
   m_Mesh: {fileID: 10202, guid: 0000000000000000e000000000000000, type: 0}
+--- !u!4 &969871272 stripped
+Transform:
+  m_CorrespondingSourceObject: {fileID: 4045079398751778650, guid: 3893cb7999b60c3429f93efe5aaa26f0,
+    type: 3}
+  m_PrefabInstance: {fileID: 6601125733401888400}
+  m_PrefabAsset: {fileID: 0}
 --- !u!1 &1230943736
 GameObject:
   m_ObjectHideFlags: 0
@@ -2361,12 +2369,12 @@ MonoBehaviour:
   gravityStrength: 50
   gravityFieldMass: 50
   priority: 5
+  gravityDelay: 0
   simpleCollider: {fileID: 0}
   meshCollider: {fileID: 0}
   thresholdDistance: 0.1
   neighborThresholdDistance: 0.1
   smoothingFactor: 10
-  gravityDelay: 0
   gravityDirectionType: 0
 --- !u!135 &1464865946
 SphereCollider:
@@ -3093,6 +3101,11 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 1788547800}
     m_Modifications:
+    - target: {fileID: 4331680866510902384, guid: 04b082c31d0851840a1a4f374bd33edf,
+        type: 3}
+      propertyPath: gravityFieldType
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 6006215345372047192, guid: 04b082c31d0851840a1a4f374bd33edf,
         type: 3}
       propertyPath: m_LocalPosition.x
@@ -3101,12 +3114,12 @@ PrefabInstance:
     - target: {fileID: 6006215345372047192, guid: 04b082c31d0851840a1a4f374bd33edf,
         type: 3}
       propertyPath: m_LocalPosition.y
-      value: 239.08078
+      value: 309.9
       objectReference: {fileID: 0}
     - target: {fileID: 6006215345372047192, guid: 04b082c31d0851840a1a4f374bd33edf,
         type: 3}
       propertyPath: m_LocalPosition.z
-      value: -212.33725
+      value: -258.7
       objectReference: {fileID: 0}
     - target: {fileID: 6006215345372047192, guid: 04b082c31d0851840a1a4f374bd33edf,
         type: 3}
@@ -3169,17 +3182,17 @@ PrefabInstance:
     - target: {fileID: 1423970551995779522, guid: 3893cb7999b60c3429f93efe5aaa26f0,
         type: 3}
       propertyPath: m_LocalPosition.x
-      value: -1.57
+      value: -9.69
       objectReference: {fileID: 0}
     - target: {fileID: 1423970551995779522, guid: 3893cb7999b60c3429f93efe5aaa26f0,
         type: 3}
       propertyPath: m_LocalPosition.y
-      value: -0.57
+      value: 0.11
       objectReference: {fileID: 0}
     - target: {fileID: 1423970551995779522, guid: 3893cb7999b60c3429f93efe5aaa26f0,
         type: 3}
       propertyPath: m_LocalPosition.z
-      value: -18.85
+      value: -19.91
       objectReference: {fileID: 0}
     - target: {fileID: 1423970551995779522, guid: 3893cb7999b60c3429f93efe5aaa26f0,
         type: 3}
@@ -3216,6 +3229,21 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 1962910588310991370, guid: 3893cb7999b60c3429f93efe5aaa26f0,
+        type: 3}
+      propertyPath: useGravityLaw
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 2367436860603990984, guid: 3893cb7999b60c3429f93efe5aaa26f0,
+        type: 3}
+      propertyPath: m_Enabled
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 2931992474462533762, guid: 3893cb7999b60c3429f93efe5aaa26f0,
+        type: 3}
+      propertyPath: maxJumpCount
+      value: 3
+      objectReference: {fileID: 0}
     - target: {fileID: 4014275944295111276, guid: 3893cb7999b60c3429f93efe5aaa26f0,
         type: 3}
       propertyPath: currentGravityField
@@ -3226,7 +3254,13 @@ PrefabInstance:
       propertyPath: cameraTransform
       value: 
       objectReference: {fileID: 330585546}
-    m_RemovedComponents: []
+    - target: {fileID: 8319708275809865620, guid: 3893cb7999b60c3429f93efe5aaa26f0,
+        type: 3}
+      propertyPath: playerCharacter
+      value: 
+      objectReference: {fileID: 969871272}
+    m_RemovedComponents:
+    - {fileID: 4014275944295111276, guid: 3893cb7999b60c3429f93efe5aaa26f0, type: 3}
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
     m_AddedComponents: []
@@ -3376,6 +3410,11 @@ PrefabInstance:
         type: 3}
       propertyPath: m_Name
       value: Npc
+      objectReference: {fileID: 0}
+    - target: {fileID: 2984430431698697990, guid: 36fe5dfc6f72ace4ea5ddf696b7e5eb1,
+        type: 3}
+      propertyPath: m_IsActive
+      value: 0
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []

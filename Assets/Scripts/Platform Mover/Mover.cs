@@ -92,10 +92,6 @@ public class Mover : MonoBehaviour
         {
             waitTimeRemaining = currentPoint.waitTime;
         }
-        else
-        {
-            isMoving = true;
-        }
     }
 
     private void MoveToNextPoint()

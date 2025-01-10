@@ -157,12 +157,12 @@ MonoBehaviour:
   gravityStrength: 9.81
   gravityFieldMass: 10
   priority: 1
+  gravityDelay: 0
   simpleCollider: {fileID: 0}
   meshCollider: {fileID: 0}
   thresholdDistance: 0.1
   neighborThresholdDistance: 0.1
   smoothingFactor: 10
-  gravityDelay: 0
   gravityDirectionType: 0
 --- !u!65 &22544884
 BoxCollider:
@@ -1542,7 +1542,7 @@ PrefabInstance:
     - target: {fileID: 299452601642577651, guid: f1197a62d60c6b64e957713b44f467ef,
         type: 3}
       propertyPath: gravityFieldType
-      value: 2
+      value: 3
       objectReference: {fileID: 0}
     - target: {fileID: 5372299230635835626, guid: f1197a62d60c6b64e957713b44f467ef,
         type: 3}
@@ -1617,7 +1617,7 @@ PrefabInstance:
     - target: {fileID: 5403087300142070010, guid: f1197a62d60c6b64e957713b44f467ef,
         type: 3}
       propertyPath: m_IsActive
-      value: 0
+      value: 1
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
@@ -1690,7 +1690,7 @@ Transform:
   m_GameObject: {fileID: 1294120412}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0.0000037252898, w: -1}
-  m_LocalPosition: {x: -1.5700003, y: -2.08, z: -10.69}
+  m_LocalPosition: {x: -1.57, y: -7.2, z: 12.81}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
@@ -1737,7 +1737,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: eba579d1b69a5fc428df06e7ad7e8708, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  playerObject: {fileID: 1574030190}
+  playerCharacter: {fileID: 1574030190}
   cameraTransform: {fileID: 330585546}
   isGrounded: 0
 --- !u!136 &1294120416
@@ -1795,7 +1795,8 @@ MonoBehaviour:
   speed: 10
   rotationSpeed: 10
   baseJumpForce: 5
-  maxJumpCount: 2
+  additionalJumpForce: 0.5
+  maxAdditionalHigherJumps: 2
   jumpCooldown: 5
 --- !u!114 &1294120420
 MonoBehaviour:

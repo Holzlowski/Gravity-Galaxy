@@ -24,11 +24,11 @@ public class CameraController : MonoBehaviour
         // Kamera um den Spieler rotieren lassen
         if (Input.GetKey(KeyCode.Q))
         {
-            RotateCameraAroundTarget(-target.up);
+            RotateCameraAroundTarget(target.up);
         }
         if (Input.GetKey(KeyCode.E))
         {
-            RotateCameraAroundTarget(target.up);
+            RotateCameraAroundTarget(-target.up);
         }
 
         UpdateCameraPosition();
