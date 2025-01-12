@@ -11,11 +11,8 @@ public class GameManager : MonoBehaviour
     private Transform sun;
     public Transform Sun => sun;
 
-    public bool useNormals = false;
     public bool allowSpaceFlight = false;
-    public bool switchGravityFieldBasedOnDistance = false;
     public bool useGravityLaw = false;
-    public bool equalJumpHeight = false;
 
     public static GameManager Instance
     {

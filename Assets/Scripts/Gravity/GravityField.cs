@@ -188,7 +188,6 @@ public class GravityField : MonoBehaviour
 
     private Vector3 GetInterpolatedGravityDirectionFromLowPolyMesh(Vector3 playerPosition, GravityState state)
     {
-        // Find closest triangle
         Triangle newClosestTriangle = kdTree.FindNearestTriangleNode(playerPosition);
 
         if (newClosestTriangle == null)
@@ -259,7 +258,7 @@ public class GravityField : MonoBehaviour
         Triangle closestTriangle = kdTree.FindNearestTriangleNode(playerPosition);
 
         //Interpoliere die Normalen
-        return -closestTriangle.normal * gravityStrength;
+        return -closestTriangle.normal;
     }
 
     // private Vector3 CalculateTriangleBasedGravity(Vector3 playerPosition)

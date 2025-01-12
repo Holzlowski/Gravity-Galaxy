@@ -212,7 +212,7 @@ PrefabInstance:
     - target: {fileID: 2625683279748000480, guid: 36fe5dfc6f72ace4ea5ddf696b7e5eb1,
         type: 3}
       propertyPath: m_LocalPosition.x
-      value: -7.74
+      value: -7.375
       objectReference: {fileID: 0}
     - target: {fileID: 2625683279748000480, guid: 36fe5dfc6f72ace4ea5ddf696b7e5eb1,
         type: 3}
@@ -222,7 +222,7 @@ PrefabInstance:
     - target: {fileID: 2625683279748000480, guid: 36fe5dfc6f72ace4ea5ddf696b7e5eb1,
         type: 3}
       propertyPath: m_LocalPosition.z
-      value: 7.11
+      value: 10.203
       objectReference: {fileID: 0}
     - target: {fileID: 2625683279748000480, guid: 36fe5dfc6f72ace4ea5ddf696b7e5eb1,
         type: 3}
@@ -428,6 +428,11 @@ PrefabInstance:
         type: 3}
       propertyPath: meshCollider
       value: 
+      objectReference: {fileID: 0}
+    - target: {fileID: 299452601642577651, guid: f1197a62d60c6b64e957713b44f467ef,
+        type: 3}
+      propertyPath: gravityStrength
+      value: 25
       objectReference: {fileID: 0}
     - target: {fileID: 299452601642577651, guid: f1197a62d60c6b64e957713b44f467ef,
         type: 3}
@@ -756,11 +761,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   player: {fileID: 1294120412}
   sun: {fileID: 2138479965}
-  useNormals: 0
   allowSpaceFlight: 0
-  switchGravityFieldBasedOnDistance: 0
   useGravityLaw: 0
-  equalJumpHeight: 0
 --- !u!4 &495928494
 Transform:
   m_ObjectHideFlags: 0
@@ -1532,7 +1534,7 @@ PrefabInstance:
     - target: {fileID: 299452601642577651, guid: f1197a62d60c6b64e957713b44f467ef,
         type: 3}
       propertyPath: gravityDelay
-      value: 1
+      value: 3
       objectReference: {fileID: 0}
     - target: {fileID: 299452601642577651, guid: f1197a62d60c6b64e957713b44f467ef,
         type: 3}
@@ -1812,6 +1814,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   activeGravityFields: []
   rotationToPlanetSpeed: 5
+  pushBackForce: 10
   useGravityLaw: 1
 --- !u!114 &1294120421
 MonoBehaviour:
@@ -1825,8 +1828,12 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 8776654d14e909140b979c9112be130a, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  gravityDirection: {x: 0, y: 0, z: 0}
   rotationToPlanetSpeed: 10
+  gravityStrength: 0
   currentGravityField: {fileID: 22544885}
+  gravityField: {fileID: 0}
+  surfaceNormal: {x: 0, y: 0, z: 0}
 --- !u!1001 &1327122791
 PrefabInstance:
   m_ObjectHideFlags: 0

@@ -14,22 +14,37 @@ public class Mover : MonoBehaviour
     private float waitTimeRemaining = 0f;
 
     [Header("Player Interaction")]
-    private GameObject player;
+    private Transform player;
+    private Rigidbody playerRb;
+    private GroundDetection playerGroundDetection;
     private Vector3 lastPosition;
     private Quaternion lastRotation;
 
+    private Rigidbody rb;
+    private float maxPlayerDistance = 5f;
+
     void Start()
     {
+        rb = GetComponent<Rigidbody>();
+        if (rb == null)
+        {
+            Debug.LogError("Rigidbody component missing from the platform.");
+            return;
+        }
         InitializePlatform();
-    }
-
-    void Update()
-    {
-        HandleMovementLogic();
     }
 
     private void FixedUpdate()
     {
+        if (player == null)
+        {
+            Debug.Log("Player transform is null");
+        }
+        else
+        {
+            Debug.Log("Player transform: " + player);
+        }
+        HandleMovementLogic();
         SyncPlayerMovement();
     }
 
@@ -37,11 +52,11 @@ public class Mover : MonoBehaviour
     {
         if (pointNetwork != null && pointNetwork.points.Count > 0)
         {
-            transform.position = pointNetwork.points[0].transform.position;
+            rb.position = pointNetwork.points[0].transform.position;
         }
 
-        lastPosition = transform.position;
-        lastRotation = transform.rotation;
+        lastPosition = rb.position;
+        lastRotation = rb.rotation;
     }
 
     private void HandleMovementLogic()
@@ -100,42 +115,16 @@ public class Mover : MonoBehaviour
         MoveToPoint(targetPoint);
     }
 
-    private void SyncPlayerMovement()
-    {
-        if (player == null)
-        {
-            return;
-        }
-
-        Rigidbody playerRb = player.GetComponent<Rigidbody>();
-        if (playerRb == null)
-        {
-            return;
-        }
-
-        Vector3 platformMovement = transform.position - lastPosition;
-        Quaternion platformRotationDelta = transform.rotation * Quaternion.Inverse(lastRotation);
-
-        Vector3 playerOffset = playerRb.position - transform.position;
-        Vector3 rotatedOffset = platformRotationDelta * playerOffset;
-        Vector3 movementDueToRotation = rotatedOffset - playerOffset;
-
-        playerRb.MovePosition(playerRb.position + platformMovement + movementDueToRotation);
-        playerRb.MoveRotation(Quaternion.Slerp(playerRb.rotation, transform.rotation, Time.fixedDeltaTime * rotationSpeed));
-
-        lastPosition = transform.position;
-        lastRotation = transform.rotation;
-    }
-
     private void MoveToPoint(Point targetPoint)
     {
-        Vector3 direction = (targetPoint.transform.position - transform.position).normalized;
-        float distance = Vector3.Distance(transform.position, targetPoint.transform.position);
+        Vector3 direction = (targetPoint.transform.position - rb.position).normalized;
+        float distance = Vector3.Distance(rb.position, targetPoint.transform.position);
+
         float moveDistance = speed * Time.deltaTime;
 
         if (moveDistance >= distance)
         {
-            transform.position = targetPoint.transform.position;
+            rb.MovePosition(targetPoint.transform.position);
             isMoving = false;
             currentPointIndex = GetNextPointIndex();
 
@@ -146,7 +135,7 @@ public class Mover : MonoBehaviour
         }
         else
         {
-            transform.position += direction * moveDistance;
+            rb.MovePosition(rb.position + direction * moveDistance);
         }
 
         RotateToTargetPoint(targetPoint);
@@ -169,7 +158,7 @@ public class Mover : MonoBehaviour
         Transform rotationTarget = targetPoint.targetObject != null ? targetPoint.targetObject : transform;
         Quaternion targetRotation = targetPoint.transform.rotation;
 
-        rotationTarget.rotation = Quaternion.Slerp(rotationTarget.rotation, targetRotation, Time.deltaTime * rotationSpeed);
+        rb.MoveRotation(Quaternion.Slerp(rb.rotation, targetRotation, Time.fixedDeltaTime * rotationSpeed));
     }
 
     private int GetNextPointIndex()
@@ -181,15 +170,53 @@ public class Mover : MonoBehaviour
     {
         if (other.CompareTag("Player"))
         {
-            player = other.gameObject;
+            player = other.transform;
+            playerRb = player.GetComponent<Rigidbody>();
+            playerGroundDetection = player.GetComponent<GroundDetection>();
         }
     }
 
-    private void OnTriggerExit(Collider other)
+    private void SyncPlayerMovement()
     {
-        if (other.CompareTag("Player"))
+        // Überprüfen, ob der Spieler und notwendige Komponenten vorhanden sind
+        if (player == null || player.GetComponent<Rigidbody>() == null)
         {
-            player = null;
+            return;
         }
+
+        // Berechne die Plattformverschiebung
+        Vector3 platformMovement = transform.position - lastPosition;
+        Quaternion platformRotationDelta = transform.rotation * Quaternion.Inverse(lastRotation);
+
+        // Überprüfen, ob der Spieler auf der Plattform ist
+        bool isPlayerOnPlatform = playerGroundDetection != null && playerGroundDetection.IsGrounded;
+
+        // Berechne den Abstand zwischen dem Spieler und der Plattform
+        float distanceToPlatform = Vector3.Distance(player.position, transform.position);
+
+        if (isPlayerOnPlatform)
+        {
+            // Berechne den Offset des Spielers relativ zur Plattform
+            Vector3 playerOffset = playerRb.transform.position - transform.position; // Hier wird die globale Position verwendet
+            Vector3 rotatedOffset = platformRotationDelta * playerOffset;
+            Vector3 movementDueToRotation = rotatedOffset - playerOffset;
+
+            // Bewegung des Spielers relativ zur Plattform
+            playerRb.MovePosition(playerRb.position + platformMovement + movementDueToRotation);
+
+            // Optional: Die Rotation des Spielers an die der Plattform anpassen
+            playerRb.MoveRotation(Quaternion.Slerp(playerRb.rotation, transform.rotation, Time.fixedDeltaTime * rotationSpeed));
+        }
+
+        // Setze den Spieler auf null, wenn der Abstand zur Plattform zu groß ist
+        if (distanceToPlatform > maxPlayerDistance)
+        {
+            player = null; // Synchronisation stoppen, wenn der Spieler zu weit weg ist
+        }
+
+        // Aktualisiere die letzte Plattformposition und -rotation
+        lastPosition = transform.position;
+        lastRotation = transform.rotation;
     }
 }
+

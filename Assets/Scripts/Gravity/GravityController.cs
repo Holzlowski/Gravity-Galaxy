@@ -13,22 +13,20 @@ public class GravityController : MonoBehaviour
 
     [SerializeField]
     private float rotationToPlanetSpeed = 10f;
+    [SerializeField]
+    private float pushBackForce = 10f;
     private int lastAppliedPriority = -1;
 
     [SerializeField]
     private bool useGravityLaw = true;
     private GroundDetection groundDetection;
 
+
     void Awake()
     {
         rb = GetComponent<Rigidbody>();
         groundDetection = GetComponent<GroundDetection>();
         gravityState = new GravityState();
-    }
-
-    public Vector3 GetGravityDirection()
-    {
-        return gravityDirection;
     }
 
     public void ApplyGravitation()
@@ -42,36 +40,23 @@ public class GravityController : MonoBehaviour
             return;
         }
 
-        // Aktualisiere die Verzögerungstimer aller GravityFields
-        foreach (var gravityField in activeGravityFields)
-        {
-            gravityField.UpdateDelayTimer(Time.deltaTime);
-        }
+        var highestPriorityFields = GetHighestPriorityFields();
+        int currentHighestPriority = highestPriorityFields.First().Priority;
 
-        // Finde die höchste Priorität
-        int currentHighestPriority = activeGravityFields.Max(field => field.Priority);
-
-        // Überprüfe, ob sich die Priorität geändert hat
         if (currentHighestPriority != lastAppliedPriority)
         {
             lastAppliedPriority = currentHighestPriority;
 
-            // Setze den Delay für alle Felder mit der neuen höchsten Priorität zurück
-            foreach (var field in activeGravityFields)
+            foreach (var field in highestPriorityFields)
             {
-                if (field.Priority == currentHighestPriority)
-                {
-                    field.ResetDelay();
-                }
+                field.ResetDelay();
             }
         }
 
-        // Finde die höchste Priorität und filtere die relevanten Felder
-        var highestPriorityFields = GetHighestPriorityFields();
-
         foreach (var gravityField in highestPriorityFields)
         {
-            // Ignoriere Felder mit aktiver Verzögerung
+            gravityField.UpdateDelayTimer(Time.deltaTime);
+
             if (gravityField.IsDelayActive)
             {
                 continue;
@@ -79,8 +64,8 @@ public class GravityController : MonoBehaviour
 
             totalGravity += CalculateFieldGravity(gravityField);
         }
-        gravityDirection = totalGravity.normalized;
 
+        gravityDirection = totalGravity.normalized;
         rb.AddForce(totalGravity, ForceMode.Acceleration);
     }
 
@@ -91,7 +76,8 @@ public class GravityController : MonoBehaviour
         float colliderRadius = gravityField.GravityFieldRadius;
         float fieldGravityStrength;
 
-        if (gravityField.GravityFieldType == GravityFieldType.TransformOneDirection)
+        if (gravityField.GravityFieldType == GravityFieldType.TransformOneDirection
+        || gravityField.GravityFieldType == GravityFieldType.OneDirection)
         {
             fieldGravityStrength = gravityField.GravityStrength;
         }
@@ -103,7 +89,7 @@ public class GravityController : MonoBehaviour
 
             if (distance > colliderRadius + 5)
             {
-                fieldGravityStrength = gravityField.GravityStrength;
+                fieldGravityStrength = pushBackForce;
             }
         }
         return fieldGravityDirection * fieldGravityStrength;
@@ -127,6 +113,13 @@ public class GravityController : MonoBehaviour
         rb.MoveRotation(newRotation);
     }
 
+    private List<GravityField> GetHighestPriorityFields()
+    {
+        int highestPriority = activeGravityFields.Max(field => field.Priority);
+        return activeGravityFields.Where(field => field.Priority == highestPriority).ToList();
+    }
+
+
     private void CheckGravityFieldDistances()
     {
         for (int i = activeGravityFields.Count - 1; i >= 0; i--)
@@ -139,12 +132,6 @@ public class GravityController : MonoBehaviour
                 activeGravityFields.RemoveAt(i); // Feld entfernen, wenn außerhalb des Radius
             }
         }
-    }
-
-    private List<GravityField> GetHighestPriorityFields()
-    {
-        int highestPriority = activeGravityFields.Max(field => field.Priority);
-        return activeGravityFields.Where(field => field.Priority == highestPriority).ToList();
     }
 
     private void OnTriggerStay(Collider other)
@@ -170,7 +157,6 @@ public class GravityController : MonoBehaviour
     {
         if (!activeGravityFields.Contains(newGravityField))
         {
-            newGravityField.ResetDelay(); // Verzögerung starten
             activeGravityFields.Add(newGravityField);
         }
     }
@@ -182,29 +168,6 @@ public class GravityController : MonoBehaviour
             return;
         }
         activeGravityFields.Remove(gravityField);
-    }
-
-    public void GetClosestGravityField()
-    {
-        float minDistance = float.MaxValue;
-        GravityField closestField = null;
-
-        foreach (var gravityField in GetHighestPriorityFields())
-        {
-            float distance = Vector3.Distance(transform.position, gravityField.transform.position);
-            if (distance < minDistance)
-            {
-                minDistance = distance;
-                closestField = gravityField;
-            }
-        }
-
-        if (closestField != null)
-        {
-            activeGravityFields.Clear();
-            closestField.ResetDelay(); // Verzögerung aktivieren
-            activeGravityFields.Add(closestField);
-        }
     }
 }
 

@@ -258,7 +258,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: f4a38d102e5150f428fc261dcab95945, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  gravityFieldType: 2
+  gravityFieldType: 1
   gravityStrength: 9.81
   gravityFieldMass: 10
   priority: 1
@@ -288,7 +288,7 @@ BoxCollider:
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 3
-  m_Size: {x: 3.7, y: 6.08, z: 2.98}
+  m_Size: {x: 3.7, y: 6.05, z: 2.98}
   m_Center: {x: 0, y: 0, z: 0}
 --- !u!4 &22544885
 Transform:
@@ -300,7 +300,7 @@ Transform:
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
   m_LocalPosition: {x: 0, y: 3.2, z: 0}
-  m_LocalScale: {x: 2.6611464, y: 1.4066, z: 2.460284}
+  m_LocalScale: {x: 2.71, y: 1.4066, z: 2.41}
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 1473576735}
@@ -574,6 +574,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   activeGravityFields: []
   rotationToPlanetSpeed: 10
+  pushBackForce: 10
   useGravityLaw: 1
 --- !u!114 &136399293
 MonoBehaviour:
@@ -1059,11 +1060,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   player: {fileID: 1294120412}
   sun: {fileID: 2138479965}
-  useNormals: 0
   allowSpaceFlight: 0
-  switchGravityFieldBasedOnDistance: 0
   useGravityLaw: 0
-  equalJumpHeight: 0
 --- !u!4 &495928494
 Transform:
   m_ObjectHideFlags: 0
@@ -1448,6 +1446,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   activeGravityFields: []
   rotationToPlanetSpeed: 10
+  pushBackForce: 10
   useGravityLaw: 1
 --- !u!114 &769821159
 MonoBehaviour:
@@ -2425,6 +2424,7 @@ GameObject:
   - component: {fileID: 1473576738}
   - component: {fileID: 1473576737}
   - component: {fileID: 1473576736}
+  - component: {fileID: 1473576740}
   m_Layer: 6
   m_Name: Platform
   m_TagString: Untagged
@@ -2454,7 +2454,7 @@ BoxCollider:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1473576734}
-  m_Material: {fileID: 0}
+  m_Material: {fileID: 13400000, guid: 6f128d92560b85947b44405c56f133c6, type: 2}
   m_IncludeLayers:
     serializedVersion: 2
     m_Bits: 0
@@ -2518,6 +2518,33 @@ MeshFilter:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1473576734}
   m_Mesh: {fileID: 10202, guid: 0000000000000000e000000000000000, type: 0}
+--- !u!54 &1473576740
+Rigidbody:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1473576734}
+  serializedVersion: 4
+  m_Mass: 1
+  m_Drag: 0
+  m_AngularDrag: 0.05
+  m_CenterOfMass: {x: 0, y: 0, z: 0}
+  m_InertiaTensor: {x: 1, y: 1, z: 1}
+  m_InertiaRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ImplicitCom: 1
+  m_ImplicitTensor: 1
+  m_UseGravity: 0
+  m_IsKinematic: 1
+  m_Interpolate: 0
+  m_Constraints: 112
+  m_CollisionDetection: 0
 --- !u!1 &1755869130
 GameObject:
   m_ObjectHideFlags: 0
@@ -2792,6 +2819,7 @@ GameObject:
   - component: {fileID: 1824462222}
   - component: {fileID: 1824462221}
   - component: {fileID: 1824462220}
+  - component: {fileID: 1824462223}
   m_Layer: 0
   m_Name: MovingPlatform
   m_TagString: Untagged
@@ -2818,8 +2846,8 @@ BoxCollider:
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 3
-  m_Size: {x: 4.87, y: 0.21, z: 6.09}
-  m_Center: {x: 0, y: -0.64, z: 0}
+  m_Size: {x: 4.87, y: 2.41, z: 6.09}
+  m_Center: {x: 0, y: 0.43, z: 0}
 --- !u!114 &1824462221
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -2833,7 +2861,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   pointNetwork: {fileID: 673674257}
-  speed: 5
+  speed: 2
   rotationSpeed: 5
   resetToStart: 0
 --- !u!4 &1824462222
@@ -2852,6 +2880,33 @@ Transform:
   - {fileID: 22544885}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!54 &1824462223
+Rigidbody:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1824462219}
+  serializedVersion: 4
+  m_Mass: 1
+  m_Drag: 0
+  m_AngularDrag: 0.05
+  m_CenterOfMass: {x: 0, y: 0, z: 0}
+  m_InertiaTensor: {x: 1, y: 1, z: 1}
+  m_InertiaRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ImplicitCom: 1
+  m_ImplicitTensor: 1
+  m_UseGravity: 0
+  m_IsKinematic: 0
+  m_Interpolate: 0
+  m_Constraints: 112
+  m_CollisionDetection: 0
 --- !u!65 &1898286277 stripped
 BoxCollider:
   m_CorrespondingSourceObject: {fileID: 760220319428548417, guid: 7acd0d1ca033efd43970176ddd43e720,
@@ -3187,12 +3242,12 @@ PrefabInstance:
     - target: {fileID: 1423970551995779522, guid: 3893cb7999b60c3429f93efe5aaa26f0,
         type: 3}
       propertyPath: m_LocalPosition.y
-      value: 0.11
+      value: 1.58
       objectReference: {fileID: 0}
     - target: {fileID: 1423970551995779522, guid: 3893cb7999b60c3429f93efe5aaa26f0,
         type: 3}
       propertyPath: m_LocalPosition.z
-      value: -19.91
+      value: -20.14
       objectReference: {fileID: 0}
     - target: {fileID: 1423970551995779522, guid: 3893cb7999b60c3429f93efe5aaa26f0,
         type: 3}
@@ -3249,6 +3304,11 @@ PrefabInstance:
       propertyPath: currentGravityField
       value: 
       objectReference: {fileID: 22544885}
+    - target: {fileID: 7291550122007145975, guid: 3893cb7999b60c3429f93efe5aaa26f0,
+        type: 3}
+      propertyPath: m_IsKinematic
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 8319708275809865620, guid: 3893cb7999b60c3429f93efe5aaa26f0,
         type: 3}
       propertyPath: cameraTransform
