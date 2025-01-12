@@ -36,14 +36,6 @@ public class Mover : MonoBehaviour
 
     private void FixedUpdate()
     {
-        if (player == null)
-        {
-            Debug.Log("Player transform is null");
-        }
-        else
-        {
-            Debug.Log("Player transform: " + player);
-        }
         HandleMovementLogic();
         SyncPlayerMovement();
     }
@@ -126,12 +118,16 @@ public class Mover : MonoBehaviour
         {
             rb.MovePosition(targetPoint.transform.position);
             isMoving = false;
-            currentPointIndex = GetNextPointIndex();
 
-            if (!pointNetwork.loop && currentPointIndex == 0)
+            // Überprüfen, ob die Plattform am letzten Punkt ist
+            if (!pointNetwork.loop && currentPointIndex == pointNetwork.points.Count - 1)
             {
-                HandleEndOfPath();
+                // Plattform bleibt am letzten Punkt stehen
+                return;
             }
+
+            // Nächsten Punkt ermitteln
+            currentPointIndex = GetNextPointIndex();
         }
         else
         {
@@ -139,18 +135,6 @@ public class Mover : MonoBehaviour
         }
 
         RotateToTargetPoint(targetPoint);
-    }
-
-    private void HandleEndOfPath()
-    {
-        if (resetToStart)
-        {
-            currentPointIndex = 0;
-        }
-        else
-        {
-            enabled = false;
-        }
     }
 
     private void RotateToTargetPoint(Point targetPoint)
@@ -163,7 +147,20 @@ public class Mover : MonoBehaviour
 
     private int GetNextPointIndex()
     {
-        return (currentPointIndex + 1) % pointNetwork.points.Count;
+        // Wenn Loop aktiviert ist, gehe zyklisch durch die Punkte
+        if (pointNetwork.loop)
+        {
+            return (currentPointIndex + 1) % pointNetwork.points.Count;
+        }
+
+        // Wenn Loop deaktiviert ist, überprüfe, ob es der letzte Punkt ist
+        if (currentPointIndex < pointNetwork.points.Count - 1)
+        {
+            return currentPointIndex + 1;
+        }
+
+        // Bleibe am letzten Punkt
+        return currentPointIndex;
     }
 
     private void OnTriggerEnter(Collider other)
@@ -204,7 +201,7 @@ public class Mover : MonoBehaviour
             // Bewegung des Spielers relativ zur Plattform
             playerRb.MovePosition(playerRb.position + platformMovement + movementDueToRotation);
 
-            // Optional: Die Rotation des Spielers an die der Plattform anpassen
+            // Die Rotation des Spielers an die der Plattform anpassen
             playerRb.MoveRotation(Quaternion.Slerp(playerRb.rotation, transform.rotation, Time.fixedDeltaTime * rotationSpeed));
         }
 

@@ -1283,7 +1283,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   points: []
-  loop: 1
+  loop: 0
 --- !u!4 &673674258
 Transform:
   m_ObjectHideFlags: 0
@@ -2861,9 +2861,9 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   pointNetwork: {fileID: 673674257}
-  speed: 2
+  speed: 5
   rotationSpeed: 5
-  resetToStart: 0
+  resetToStart: 1
 --- !u!4 &1824462222
 Transform:
   m_ObjectHideFlags: 0
