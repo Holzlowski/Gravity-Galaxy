@@ -11,17 +11,19 @@ public class AIController : MonoBehaviour
     private Vector3 currentDirection;
     private float directionChangeTimer;
 
-    private bool isChilling = false;
-    private float chillTimer;
-    private int remainingChillJumps;
-    private float jumpTimer;
+    private bool isRelaxing = false;
+    private float relaxTimer;
+    private bool hasJumped = false; // Kontrolliert, ob der NPC im aktuellen Relaxing gesprungen ist
     private int randomDirection = -1;
+
+    [Range(0f, 1f)]
+    [SerializeField]
+    private float jumpChance = 0.5f; // Wahrscheinlichkeit, dass der NPC springt
 
     Movement aiMovement;
     GravityController gravityController;
     GroundDetection groundDetection;
 
-    // Start is called before the first frame update
     void Awake()
     {
         rb = GetComponent<Rigidbody>();
@@ -32,30 +34,26 @@ public class AIController : MonoBehaviour
         currentDirection = transform.forward;
     }
 
-    // Update is called once per frame
     void Update()
     {
         gravityController.ApplyGravitation();
         ChangeDirection(randomDirection);
 
-        if (isChilling)
+        if (isRelaxing)
         {
-            chillTimer -= Time.deltaTime;
-            jumpTimer -= Time.deltaTime; // Timer für den nächsten Sprung verringern
+            relaxTimer -= Time.deltaTime;
 
-            if (chillTimer <= 0f)
+            if (relaxTimer <= 0f)
             {
-                isChilling = false;
-                directionChangeTimer = Random.Range(2f, 8f); // Timer zurücksetzen
-                remainingChillJumps = 0; // Sprünge zurücksetzen
+                isRelaxing = false;
+                hasJumped = false;
+                directionChangeTimer = Random.Range(2f, 8f);
             }
 
-            // Wenn der NPC während des Chillens springen soll
-            if (remainingChillJumps > 0 && jumpTimer <= 0f)
+            if (!hasJumped && groundDetection.IsGrounded && Random.value < jumpChance)
             {
-                aiMovement.Jump(); // NPC springt
-                remainingChillJumps--; // Anzahl der verbleibenden Chill-Sprünge verringern
-                jumpTimer = Random.Range(0.5f, 1.5f); // Timer für den nächsten Sprung setzen
+                aiMovement.Jump();
+                hasJumped = true;
             }
         }
         else
@@ -63,9 +61,9 @@ public class AIController : MonoBehaviour
             directionChangeTimer -= Time.deltaTime;
             if (directionChangeTimer <= 0f)
             {
-                directionChangeTimer = Random.Range(2f, 8f); // Timer zurücksetzen
+                directionChangeTimer = Random.Range(2f, 8f);
                 randomDirection = Random.Range(0, 8);
-                StartChilling();
+                StartRelaxing();
             }
             else if (groundDetection.IsGrounded)
             {
@@ -107,11 +105,10 @@ public class AIController : MonoBehaviour
         }
     }
 
-    void StartChilling()
+    void StartRelaxing()
     {
-        isChilling = true;
-        chillTimer = Random.Range(1f, 3f); // Chillzeit festlegen
-        remainingChillJumps = Random.Range(1, 3); // NPC springt während des Chillens 1 oder 2 Mal
-        jumpTimer = Random.Range(0.5f, 1.5f); // Erster Sprung verzögert
+        isRelaxing = true;
+        relaxTimer = Random.Range(1f, 3f); // Relaxzeit festlegen
+        hasJumped = false; // Sicherstellen, dass der NPC in jedem Relax-Zyklus einmal springen kann
     }
 }

@@ -7,10 +7,6 @@ public class GameManager : MonoBehaviour
     private static GameManager _instance;
     public GameObject player;
 
-    [SerializeField]
-    private Transform sun;
-    public Transform Sun => sun;
-
     public bool allowSpaceFlight = false;
     public bool useGravityLaw = false;
 

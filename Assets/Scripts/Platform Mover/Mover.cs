@@ -175,43 +175,34 @@ public class Mover : MonoBehaviour
 
     private void SyncPlayerMovement()
     {
-        // Überprüfen, ob der Spieler und notwendige Komponenten vorhanden sind
         if (player == null || player.GetComponent<Rigidbody>() == null)
         {
             return;
         }
 
-        // Berechne die Plattformverschiebung
         Vector3 platformMovement = transform.position - lastPosition;
         Quaternion platformRotationDelta = transform.rotation * Quaternion.Inverse(lastRotation);
 
-        // Überprüfen, ob der Spieler auf der Plattform ist
         bool isPlayerOnPlatform = playerGroundDetection != null && playerGroundDetection.IsGrounded;
 
-        // Berechne den Abstand zwischen dem Spieler und der Plattform
         float distanceToPlatform = Vector3.Distance(player.position, transform.position);
 
         if (isPlayerOnPlatform)
         {
-            // Berechne den Offset des Spielers relativ zur Plattform
-            Vector3 playerOffset = playerRb.transform.position - transform.position; // Hier wird die globale Position verwendet
+            Vector3 playerOffset = playerRb.transform.position - transform.position;
             Vector3 rotatedOffset = platformRotationDelta * playerOffset;
             Vector3 movementDueToRotation = rotatedOffset - playerOffset;
 
-            // Bewegung des Spielers relativ zur Plattform
             playerRb.MovePosition(playerRb.position + platformMovement + movementDueToRotation);
 
-            // Die Rotation des Spielers an die der Plattform anpassen
             playerRb.MoveRotation(Quaternion.Slerp(playerRb.rotation, transform.rotation, Time.fixedDeltaTime * rotationSpeed));
         }
 
-        // Setze den Spieler auf null, wenn der Abstand zur Plattform zu groß ist
         if (distanceToPlatform > maxPlayerDistance)
         {
-            player = null; // Synchronisation stoppen, wenn der Spieler zu weit weg ist
+            player = null;
         }
 
-        // Aktualisiere die letzte Plattformposition und -rotation
         lastPosition = transform.position;
         lastRotation = transform.rotation;
     }

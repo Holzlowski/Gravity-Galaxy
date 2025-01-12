@@ -1283,7 +1283,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   points: []
-  loop: 0
+  loop: 1
 --- !u!4 &673674258
 Transform:
   m_ObjectHideFlags: 0
@@ -2847,7 +2847,7 @@ BoxCollider:
   m_Enabled: 1
   serializedVersion: 3
   m_Size: {x: 4.87, y: 2.41, z: 6.09}
-  m_Center: {x: 0, y: 0.43, z: 0}
+  m_Center: {x: 0, y: -1.57, z: 0}
 --- !u!114 &1824462221
 MonoBehaviour:
   m_ObjectHideFlags: 0
