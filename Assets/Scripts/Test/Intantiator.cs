@@ -8,30 +8,26 @@ public class Intantiator : MonoBehaviour
     private GameObject objectToInstantiate; // Das Objekt, das instanziiert werden soll
 
     [SerializeField]
-    private Transform spawnCenter; // Das Zentrum des Kreises, innerhalb dessen die Objekte instanziiert werden sollen
+    private MeshFilter spawnMeshFilter; // Das Mesh, auf dem die Objekte instanziiert werden sollen
 
     [SerializeField]
     private int numberOfObjects = 10; // Anzahl der zu instanziierenden Objekte
 
-    [SerializeField]
-    private float radius = 5f; // Radius des Kreises, innerhalb dessen die Objekte instanziiert werden sollen
-
-    [SerializeField]
-    private float spawnInterval = 1f; // Zeitintervall zwischen den Spawns
-
-    [SerializeField]
-    private bool spawnSequentially = false; // Bool, um zwischen den Modi zu wechseln
+    private Mesh spawnMesh;
 
     void Start()
     {
-        if (spawnSequentially)
+        if (spawnMeshFilter != null)
         {
-            StartCoroutine(SpawnObjectsSequentially());
+            spawnMesh = spawnMeshFilter.mesh;
         }
         else
         {
-            SpawnAllObjects();
+            Debug.LogError("No MeshFilter found on the spawnMeshFilter object.");
+            return;
         }
+
+        SpawnAllObjects();
     }
 
     private void SpawnAllObjects()
@@ -42,32 +38,45 @@ public class Intantiator : MonoBehaviour
         }
     }
 
-    private IEnumerator SpawnObjectsSequentially()
-    {
-        for (int i = 0; i < numberOfObjects; i++)
-        {
-            InstantiateObject();
-            yield return new WaitForSeconds(spawnInterval);
-        }
-    }
-
     private void InstantiateObject()
     {
-        // Zufällige Position innerhalb des Kreises berechnen
-        Vector3 randomPosition = GetRandomPositionWithinCircle(spawnCenter.position, radius);
+        // Zufällige Position auf dem Mesh berechnen
+        Vector3 randomPosition = GetRandomPositionOnMesh(spawnMesh);
 
         // Objekt instanziieren
         Instantiate(objectToInstantiate, randomPosition, Quaternion.identity);
     }
 
-    private Vector3 GetRandomPositionWithinCircle(Vector3 center, float radius)
+    private Vector3 GetRandomPositionOnMesh(Mesh mesh)
     {
-        float angle = Random.Range(0f, Mathf.PI * 2);
-        float distance = Random.Range(0f, radius);
+        // Wähle ein zufälliges Dreieck aus dem Mesh
+        int triangleIndex = Random.Range(0, mesh.triangles.Length / 3) * 3;
 
-        float x = center.x + Mathf.Cos(angle) * distance;
-        float z = center.z + Mathf.Sin(angle) * distance;
+        // Hole die Eckpunkte des Dreiecks
+        Vector3 vertex1 = mesh.vertices[mesh.triangles[triangleIndex]];
+        Vector3 vertex2 = mesh.vertices[mesh.triangles[triangleIndex + 1]];
+        Vector3 vertex3 = mesh.vertices[mesh.triangles[triangleIndex + 2]];
 
-        return new Vector3(x, center.y, z);
+        // Berechne eine zufällige Position innerhalb des Dreiecks
+        Vector3 randomPosition = GetRandomPointInTriangle(vertex1, vertex2, vertex3);
+
+        // Transformiere die Position in den Weltkoordinatenraum
+        return spawnMeshFilter.transform.TransformPoint(randomPosition);
+    }
+
+    private Vector3 GetRandomPointInTriangle(Vector3 v1, Vector3 v2, Vector3 v3)
+    {
+        float a = Random.value;
+        float b = Random.value;
+
+        // Stelle sicher, dass a + b <= 1
+        if (a + b > 1)
+        {
+            a = 1 - a;
+            b = 1 - b;
+        }
+
+        // Berechne die zufällige Position innerhalb des Dreiecks
+        return v1 + a * (v2 - v1) + b * (v3 - v1);
     }
 }
