@@ -14,6 +14,7 @@ public class ThirdPersonController : MonoBehaviour
     private Movement playerMovement;
     private GroundDetection groundDetection;
     private GravityController gravityController;
+    private Animator animator;
 
     [SerializeField]
     private bool isGrounded;
@@ -23,12 +24,14 @@ public class ThirdPersonController : MonoBehaviour
         playerMovement = GetComponent<Movement>();
         groundDetection = GetComponent<GroundDetection>();
         gravityController = GetComponent<GravityController>();
+        animator = playerCharacter.GetComponent<Animator>();
     }
 
     private void Update()
     {
         GroundCheck();
         ApplyGravityAndMovement();
+        animator.SetBool("Grounded", isGrounded);
     }
 
     private void ApplyGravityAndMovement()
@@ -43,6 +46,7 @@ public class ThirdPersonController : MonoBehaviour
         if (isGrounded)
         {
             playerMovement.Move(GetInputVector(), playerCharacter, cameraTransform);
+            animator.SetFloat("MoveSpeed", GetInputVector().magnitude);
             if (Input.GetKeyDown(KeyCode.Space))
             {
                 playerMovement.Jump();

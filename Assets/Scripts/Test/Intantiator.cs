@@ -2,81 +2,87 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class Intantiator : MonoBehaviour
+public class InstantiateAtColliderEdge : MonoBehaviour
 {
-    [SerializeField]
-    private GameObject objectToInstantiate; // Das Objekt, das instanziiert werden soll
+    [Header("Object to Instantiate")]
+    public GameObject objectToInstantiate;
 
-    [SerializeField]
-    private MeshFilter spawnMeshFilter; // Das Mesh, auf dem die Objekte instanziiert werden sollen
+    [Header("Collider Settings")]
+    public Collider targetCollider;
 
-    [SerializeField]
-    private int numberOfObjects = 10; // Anzahl der zu instanziierenden Objekte
+    [Header("Instantiation Settings")]
+    public int numberOfObjects = 10;
+    public float heightOffset = 0.1f;
 
-    private Mesh spawnMesh;
-
-    void Start()
+    private void Start()
     {
-        if (spawnMeshFilter != null)
+        if (targetCollider == null || objectToInstantiate == null)
         {
-            spawnMesh = spawnMeshFilter.mesh;
-        }
-        else
-        {
-            Debug.LogError("No MeshFilter found on the spawnMeshFilter object.");
+            Debug.LogError("Please assign a Collider and an Object to Instantiate.");
             return;
         }
 
-        SpawnAllObjects();
+        if (targetCollider is BoxCollider boxCollider)
+        {
+            InstantiateAroundBoxCollider(boxCollider);
+        }
+        else if (targetCollider is SphereCollider sphereCollider)
+        {
+            InstantiateAroundSphereCollider(sphereCollider);
+        }
+        else
+        {
+            Debug.LogError("Only BoxCollider and SphereCollider are supported.");
+        }
     }
 
-    private void SpawnAllObjects()
+    private void InstantiateAroundBoxCollider(BoxCollider boxCollider)
     {
+        Vector3 colliderCenter = boxCollider.center;
+        Vector3 colliderSize = boxCollider.size;
+
         for (int i = 0; i < numberOfObjects; i++)
         {
-            InstantiateObject();
+            float t = (float)i / numberOfObjects;
+            float angle = t * Mathf.PI * 2; // Full circle
+
+            // Calculate position on the box perimeter (XY plane example)
+            Vector3 offset = new Vector3(
+                Mathf.Cos(angle) * colliderSize.x / 2,
+                0,
+                Mathf.Sin(angle) * colliderSize.z / 2
+            );
+
+            Vector3 worldPosition = boxCollider.transform.TransformPoint(colliderCenter + offset);
+            worldPosition.y += heightOffset; // Apply height offset
+
+            Instantiate(objectToInstantiate, worldPosition, Quaternion.identity);
         }
     }
 
-    private void InstantiateObject()
+    private void InstantiateAroundSphereCollider(SphereCollider sphereCollider)
     {
-        // Zufällige Position auf dem Mesh berechnen
-        Vector3 randomPosition = GetRandomPositionOnMesh(spawnMesh);
+        Vector3 colliderCenter = sphereCollider.center;
+        float radius = sphereCollider.radius;
 
-        // Objekt instanziieren
-        Instantiate(objectToInstantiate, randomPosition, Quaternion.identity);
-    }
-
-    private Vector3 GetRandomPositionOnMesh(Mesh mesh)
-    {
-        // Wähle ein zufälliges Dreieck aus dem Mesh
-        int triangleIndex = Random.Range(0, mesh.triangles.Length / 3) * 3;
-
-        // Hole die Eckpunkte des Dreiecks
-        Vector3 vertex1 = mesh.vertices[mesh.triangles[triangleIndex]];
-        Vector3 vertex2 = mesh.vertices[mesh.triangles[triangleIndex + 1]];
-        Vector3 vertex3 = mesh.vertices[mesh.triangles[triangleIndex + 2]];
-
-        // Berechne eine zufällige Position innerhalb des Dreiecks
-        Vector3 randomPosition = GetRandomPointInTriangle(vertex1, vertex2, vertex3);
-
-        // Transformiere die Position in den Weltkoordinatenraum
-        return spawnMeshFilter.transform.TransformPoint(randomPosition);
-    }
-
-    private Vector3 GetRandomPointInTriangle(Vector3 v1, Vector3 v2, Vector3 v3)
-    {
-        float a = Random.value;
-        float b = Random.value;
-
-        // Stelle sicher, dass a + b <= 1
-        if (a + b > 1)
+        for (int i = 0; i < numberOfObjects; i++)
         {
-            a = 1 - a;
-            b = 1 - b;
-        }
+            // Fibonacci Sphere formula for evenly distributed points
+            float phi = Mathf.Acos(1 - 2 * (i + 0.5f) / numberOfObjects); // Latitude
+            float theta = Mathf.PI * (1 + Mathf.Sqrt(5)) * i;             // Longitude
 
-        // Berechne die zufällige Position innerhalb des Dreiecks
-        return v1 + a * (v2 - v1) + b * (v3 - v1);
+            float x = Mathf.Sin(phi) * Mathf.Cos(theta);
+            float y = Mathf.Sin(phi) * Mathf.Sin(theta);
+            float z = Mathf.Cos(phi);
+
+            // Calculate position on the sphere
+            Vector3 offset = new Vector3(x, y, z) * radius;
+
+            // Convert local position to world position
+            Vector3 worldPosition = sphereCollider.transform.TransformPoint(colliderCenter + offset);
+
+            // Instantiate object
+            Instantiate(objectToInstantiate, worldPosition, Quaternion.identity);
+        }
     }
 }
