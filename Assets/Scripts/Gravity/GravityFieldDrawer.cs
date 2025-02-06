@@ -38,7 +38,8 @@ public class GravityFieldDrawer : Editor
             EditorGUILayout.PropertyField(meshColliderProp, new GUIContent("Collider"));
         }
 
-        if ((GravityFieldType)gravityFieldTypeProp.enumValueIndex == GravityFieldType.OneDirection || (GravityFieldType)gravityFieldTypeProp.enumValueIndex == GravityFieldType.TransformOneDirection)
+        if ((GravityFieldType)gravityFieldTypeProp.enumValueIndex == GravityFieldType.OneDirection
+        || (GravityFieldType)gravityFieldTypeProp.enumValueIndex == GravityFieldType.TransformOneDirection)
         {
             SerializedProperty gravityDirectionType = serializedObject.FindProperty("gravityDirectionType");
             EditorGUILayout.PropertyField(gravityDirectionType, new GUIContent("Gravity Direction Type"));
@@ -65,7 +66,6 @@ public class GravityFieldDrawer : Editor
             SerializedProperty meshColliderProp = serializedObject.FindProperty("meshCollider");
             EditorGUILayout.PropertyField(meshColliderProp, new GUIContent("Mesh Collider"));
         }
-
 
         serializedObject.ApplyModifiedProperties();
     }

@@ -136,9 +136,16 @@ public class GravityController : MonoBehaviour
 
     private void OnTriggerStay(Collider other)
     {
-        if (!groundDetection.IsGrounded && other.CompareTag("GravityField"))
+        GravityField gravityField = other.GetComponent<GravityField>();
+        if (gravityField == null) return;
+
+        bool isGrounded = groundDetection.IsGrounded;
+        bool isGravityField = other.CompareTag("GravityField");
+        bool hasHigherPriority = activeGravityFields.Count == 0
+        || gravityField.Priority > activeGravityFields.Max(field => field.Priority);
+
+        if (!isGrounded && isGravityField || hasHigherPriority)
         {
-            GravityField gravityField = other.GetComponent<GravityField>();
             AddGravityField(gravityField);
             CheckGravityFieldDistances();
         }
