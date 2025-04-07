@@ -42,10 +42,10 @@ GameObject:
   - component: {fileID: 2625683279748000480}
   - component: {fileID: 8180682105022325297}
   - component: {fileID: 3242088691679072745}
-  - component: {fileID: 1217426023310672643}
   - component: {fileID: 5093373123245822523}
   - component: {fileID: 2206338613423899212}
   - component: {fileID: 4844829952373848102}
+  - component: {fileID: 6461034864647952974}
   m_Layer: 0
   m_Name: Npc
   m_TagString: Untagged
@@ -115,22 +115,6 @@ MonoBehaviour:
   additionalJumpForce: 0.5
   maxAdditionalHigherJumps: 2
   jumpCooldown: 0
---- !u!114 &1217426023310672643
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 2984430431698697990}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 75a62b12c77185e4da4b0a7a61afdc25, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  activeGravityFields: []
-  rotationToPlanetSpeed: 10
-  pushBackForce: 10
-  useGravityLaw: 1
 --- !u!114 &5093373123245822523
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -183,6 +167,22 @@ BoxCollider:
   serializedVersion: 3
   m_Size: {x: 1, y: 1, z: 0.67}
   m_Center: {x: 0, y: 0.5, z: 0}
+--- !u!114 &6461034864647952974
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2984430431698697990}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 8776654d14e909140b979c9112be130a, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  activeGravityFields: []
+  rotationToPlanetSpeed: 10
+  pushBackForce: 10
+  useGravityLaw: 1
 --- !u!1001 &7539496455449313604
 PrefabInstance:
   m_ObjectHideFlags: 0

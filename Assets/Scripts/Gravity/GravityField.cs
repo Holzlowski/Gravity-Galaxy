@@ -75,6 +75,7 @@ public class GravityField : MonoBehaviour
             if (gravityFieldType == GravityFieldType.HighPolyMeshKDTree)
             {
                 kdTree = new KDTreeTriangle(triangleList.ToArray(), false); // Nachbarn nicht berechnen
+                Debug.Log("KDTree erstellt mit " + triangleList.Count + " Dreiecken.");
             }
             else
             {

@@ -6,7 +6,6 @@ public class Mover : MonoBehaviour
     public PointNetwork pointNetwork;
     public float speed = 5f;
     public float rotationSpeed = 3f;
-    public bool resetToStart = false;
 
     [Header("State")]
     private int currentPointIndex = 0;
